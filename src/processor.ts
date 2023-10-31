@@ -58,4 +58,11 @@ export const processor = new EvmBatchProcessor()
             openSeaEvents.OrdersMatched.topic
         ],
         range: { from: 5774644 }
+    }).setFields({
+        log: {
+            address: true,
+            topics: true,
+            data: true,
+            transactionHash: true
+        }
     });

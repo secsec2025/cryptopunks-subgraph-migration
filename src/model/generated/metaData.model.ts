@@ -1,4 +1,12 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
+import {
+    Entity as Entity_,
+    Column as Column_,
+    PrimaryColumn as PrimaryColumn_,
+    OneToOne as OneToOne_,
+    Index as Index_,
+    OneToMany as OneToMany_,
+    JoinColumn
+} from "typeorm"
 import * as marshal from "./marshal"
 import {Punk} from "./punk.model"
 import {MetaDataTrait} from "./metaDataTrait.model"
@@ -43,8 +51,13 @@ export class MetaData {
      * Punk
      */
     @Index_()
-    @ManyToOne_(() => Punk, {nullable: true})
+    @OneToOne_(() => Punk, punk => punk.metadata, {nullable: true})
+    @JoinColumn()
+    // @JoinColumn({ name: 'punkId' })
     punk!: Punk
+
+    @Column_()
+    punkId!: string;
 
     /**
      * Punk Traits

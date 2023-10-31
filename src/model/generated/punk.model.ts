@@ -1,4 +1,12 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
+import {
+    Entity as Entity_,
+    Column as Column_,
+    PrimaryColumn as PrimaryColumn_,
+    ManyToOne as ManyToOne_,
+    Index as Index_,
+    OneToMany as OneToMany_,
+    OneToOne as OneToOne_
+} from "typeorm"
 import * as marshal from "./marshal"
 import {Account} from "./account.model"
 import {MetaData} from "./metaData.model"
@@ -39,11 +47,7 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     purchasedBy!: Account | undefined | null
 
-    /**
-     * Punk metadata
-     */
-    @Index_()
-    @ManyToOne_(() => MetaData, {nullable: true})
+    @OneToOne_(() => MetaData, metadata => metadata.punk, {nullable: true})
     metadata!: MetaData | undefined | null
 
     /**
