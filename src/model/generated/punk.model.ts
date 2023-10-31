@@ -33,12 +33,18 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     transferedTo!: Account | undefined | null
 
+    @Column_()
+    transferedToId!: string | undefined | null;
+
     /**
      * Account that claimed Punk
      */
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     assignedTo!: Account | undefined | null
+
+    @Column_()
+    assignedToId!: string | undefined | null;
 
     /**
      * Punk buyers
@@ -70,6 +76,9 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     owner!: Account
 
+    @Column_()
+    ownerId!: string;
+
     /**
      * Wrap Status
      */
@@ -96,6 +105,9 @@ export class Punk {
     @ManyToOne_(() => Offer, {nullable: true})
     currentBid!: Offer | undefined | null
 
+    @Column_()
+    currentBidId!: string | undefined | null;
+
     /**
      * Current AskCreated event
      */
@@ -109,6 +121,9 @@ export class Punk {
     @Index_()
     @ManyToOne_(() => Event, {nullable: true})
     currentBidCreated!: Event | undefined | null
+
+    @Column_()
+    currentBidCreatedId!: string | undefined | null;
 
     /**
      * Number of times Punk has been transferred

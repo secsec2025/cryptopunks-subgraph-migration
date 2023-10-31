@@ -21,12 +21,18 @@ export class CToken {
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account
 
+    @Column_()
+    fromId!: string;
+
     /**
      * Recepient
      */
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     to!: Account
+
+    @Column_()
+    toId!: string;
 
     /**
      * New owner of Punk

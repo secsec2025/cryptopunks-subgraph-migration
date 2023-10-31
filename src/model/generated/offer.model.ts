@@ -21,6 +21,9 @@ export class Offer {
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account
 
+    @Column_()
+    fromId!: string;
+
     /**
      * Open Status of Punk. Asks/Bids can be either Open or Closed
      */
@@ -46,6 +49,9 @@ export class Offer {
     @Index_()
     @ManyToOne_(() => Event, {nullable: true})
     created!: Event | undefined | null
+
+    @Column_()
+    createdId!: string | undefined | null;
 
     /**
      * Removed at. Could be ASK or BID

@@ -31,6 +31,9 @@ export class Event {
     @ManyToOne_(() => Punk, {nullable: true})
     nft!: Punk | undefined | null
 
+    @Column_()
+    nftId!: string | undefined | null;
+
     /**
      * Account that claimed Punk
      */
@@ -38,12 +41,18 @@ export class Event {
     @ManyToOne_(() => Account, {nullable: true})
     to!: Account | undefined | null
 
+    @Column_()
+    toId!: string | undefined | null;
+
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: true})
     amount!: bigint | undefined | null
 
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account | undefined | null
+
+    @Column_()
+    fromId!: string | undefined | null;
 
     @Column_("varchar", {length: 11, nullable: false})
     type!: EventType

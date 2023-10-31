@@ -68,16 +68,16 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
 
         punk.numberOfTransfers = punk.numberOfTransfers + 1n;
         let transfer = await entityCache.getOrCreateTransferEvent(punk, CRYPTOPUNKS_CONTRACT_ADDRESS, logEvent);
-        transfer.from = fromAccount;
-        transfer.to = toAccount;
-        transfer.nft = punk;
+        transfer.fromId = fromAccount.id;
+        transfer.toId = toAccount.id;
+        transfer.nftId = punk.id;
 
         //We close the oldBid if the bidder was transferred the punk
-        let toBid = punk.currentBid;
+        let toBid = punk.currentBidId;
         if (toBid) {
-            let oldBid = await entityCache.getOffer(toBid.id);
-            if (oldBid && oldBid.offerType === OfferType.BID && oldBid.from.id == toAccount.id) {
-                oldBid.created = punk.currentBidCreated;
+            let oldBid = await entityCache.getOffer(toBid);
+            if (oldBid && oldBid.offerType === OfferType.BID && oldBid.fromId === toAccount.id) {
+                oldBid.createdId = punk.currentBidCreatedId;
                 oldBid.open = false;
                 entityCache.saveOffer(oldBid);
             }
@@ -88,7 +88,7 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
         fromAccount.numberOfTransfers = fromAccount.numberOfTransfers + 1n;
 
         //Capture punk transfers and owners if not transferred to WRAPPED PUNK ADDRESS
-        punk.owner = toAccount;
+        punk.ownerId = toAccount.id;
 
         //Write
         entityCache.saveEvent(transfer);
@@ -96,7 +96,7 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
         entityCache.saveAccount(fromAccount);
         entityCache.savePunk(punk);
 
-    } else if (fromProxy && sender == fromProxy.id && receiver === WRAPPEDPUNKS_CONTRACT_ADDRESS) {
+    } else if (fromProxy && sender === fromProxy.id && receiver === WRAPPEDPUNKS_CONTRACT_ADDRESS) {
         // log.info('Wrap detected of punk: {} ', [tokenId])
 
         let punk = await entityCache.getPunkByID(tokenID);
@@ -134,8 +134,8 @@ export async function handleTransfer(from: string, to: string, value: bigint, lo
     let toAccount = await entityCache.getOrCreateAccount(to);
     let cToken = await entityCache.getOrCreateCToken(logEvent);
 
-    cToken.from = fromAccount;
-    cToken.to = toAccount;
+    cToken.fromId = fromAccount.id;
+    cToken.toId = toAccount.id;
     cToken.owner = to;
     cToken.amount = value;
 

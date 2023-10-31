@@ -157,10 +157,10 @@ export class EntityCache {
             assignEvent = new Event({
                 id: eventID,
                 type: EventType.ASSIGN,
-                to: toAccount,
-                nft: punk,
+                toId: toAccount.id,
+                nftId: punk.id,
                 timestamp: BigInt(logEvent.block.timestamp),
-                contract: contract,
+                contractId: contract.id,
                 blockNumber: BigInt(logEvent.block.height),
                 logNumber: BigInt(logEvent.logIndex),
                 txHash: new Uint8Array(Buffer.from(logEvent.transactionHash, 'utf8')),
@@ -172,8 +172,8 @@ export class EntityCache {
         }
 
         punk.metadata = metadata;
-        punk.assignedTo = toAccount;
-        punk.transferedTo = toAccount;
+        punk.assignedToId = toAccount.id;
+        punk.transferedToId = toAccount.id;
 
         return assignEvent;
     }
@@ -315,8 +315,8 @@ export class EntityCache {
         for (const t of traitsList) {
             this.metaDataTraits.push(new MetaDataTrait({
                 id: metaData.id.concat('-').concat(t.id),
-                trait: t,
-                metadata: metaData
+                traitId: t.id,
+                metadataId: metaData.id
             }));
         }
     };
