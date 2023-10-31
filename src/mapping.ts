@@ -4,6 +4,7 @@ import {createPunk} from "./helpers/punk-helper";
 import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountHoldings} from "./helpers/accounts-helper";
+import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
 
 
 export async function handleAssign(punkIndex: bigint, to: string, contractAddress: string, logEvent: any, entityCache: EntityCache): Promise<void> {
@@ -123,7 +124,6 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
 
 
 export async function handleTransfer(from: string, to: string, value: bigint, logEvent: any, entityCache: EntityCache) {
-    console.log(`Transfer Event ${value}`);
     /**
      @summary cToken as helper entity
       e.g: https://etherscan.io/tx/0x23d6e24628dabf4fa92fa93630e5fa6f679fac75071aab38d7e307a3c0f4a3ca#eventlog
@@ -143,4 +143,45 @@ export async function handleTransfer(from: string, to: string, value: bigint, lo
     entityCache.saveCToken(cToken);
     entityCache.saveAccount(toAccount);
     entityCache.saveAccount(fromAccount);
+}
+
+
+export async function handlePunkOffered(punkIndex: bigint, minValue: bigint, toAddress: string, logEvent: any, entityCache: EntityCache) {
+    // console.log(`handlePunkOffered ${punkIndex} to ${toAddress}`);
+    /**
+     @description:
+      - createAskCreatedEVENT
+      - create Ask
+      - create relationship between Ask and AskCreated to provide information on creation EVENT
+     */
+
+    let punk = await entityCache.getPunkByID(punkIndex);
+    if (!punk) return;
+    let askCreated = createAskCreatedEvent(punkIndex, logEvent);
+    let fromAccount = await entityCache.getOrCreateAccount(punk.ownerId);
+    let toAccount = await entityCache.getOrCreateAccount(toAddress);
+    await closeOldAsk(punk, fromAccount, entityCache);
+
+    let ask = await entityCache.getOrCreateAskOffer(punk.ownerId, logEvent);
+    ask.nftId = punk.id;
+    ask.fromId = punk.ownerId;
+    ask.amount = minValue;
+    ask.createdId = askCreated.id
+    ask.open = true
+
+    askCreated.offerId = ask.id;
+    askCreated.toId = toAddress;
+    askCreated.fromId = punk.ownerId;
+    askCreated.amount = minValue;
+
+    punk.currentAskCreatedId = askCreated.id;
+    //Update the currentAsk for the punk in Punk entity for future reference
+    punk.currentAskId = ask.id;
+
+    //Write
+    entityCache.saveEvent(askCreated);
+    entityCache.saveOffer(ask);
+    entityCache.savePunk(punk);
+
+
 }

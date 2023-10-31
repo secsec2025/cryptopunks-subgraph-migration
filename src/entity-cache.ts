@@ -1,11 +1,13 @@
 import {
     Account,
-    Contract, CToken,
+    Contract,
+    CToken,
     Event,
     EventType,
     MetaData,
     MetaDataTrait,
     Offer,
+    OfferType,
     Punk,
     Trait,
     TraitType,
@@ -19,23 +21,26 @@ import {getGlobalId} from "./utils";
 
 export class EntityCache {
 
-    public accounts: Map<string, Account>;
-    public contracts: Map<string, Contract>;
-    public metadata: Map<string, MetaData>;
-    public eventEntities: Map<string, Event>;
-    public traits: Map<string, Trait>;
-    public punks: Map<string, Punk>;
-    public userProxies: Map<string, UserProxy>;
-    public offers: Map<string, Offer>;
-    public cTokens: Map<string, CToken>;
+    public accounts!: Map<string, Account>;
+    public contracts!: Map<string, Contract>;
+    public metadata!: Map<string, MetaData>;
+    public eventEntities!: Map<string, Event>;
+    public traits!: Map<string, Trait>;
+    public punks!: Map<string, Punk>;
+    public userProxies!: Map<string, UserProxy>;
+    public offers!: Map<string, Offer>;
+    public cTokens!: Map<string, CToken>;
 
-    public metaDataTraits: MetaDataTrait[];
+    public metaDataTraits!: MetaDataTrait[];
 
     public ctx: DataHandlerContext<Store, {}>;
 
     constructor(ctx: DataHandlerContext<Store, {}>) {
         this.ctx = ctx;
+        this.initializeMaps();
+    }
 
+    private initializeMaps = () => {
         this.accounts = new Map<string, Account>();
         this.metadata = new Map<string, MetaData>();
         this.contracts = new Map<string, Contract>();
@@ -83,7 +88,7 @@ export class EntityCache {
         return a;
     }
 
-    saveAccount = (account: Account) => {
+    saveAccount = (account: Account, persist?: boolean) => {
         this.accounts.set(account.id, account);
     }
 
@@ -171,7 +176,7 @@ export class EntityCache {
 
         }
 
-        punk.metadata = metadata;
+        // punk.metadata = metadata;
         punk.assignedToId = toAccount.id;
         punk.transferedToId = toAccount.id;
 
@@ -200,7 +205,7 @@ export class EntityCache {
         return transferEvent;
     }
 
-    saveEvent = (ev: Event) => {
+    saveEvent = (ev: Event): void => {
         this.eventEntities.set(ev.id, ev);
     }
 
@@ -277,7 +282,23 @@ export class EntityCache {
         return o;
     }
 
-    saveOffer = (offer: Offer) => {
+    getOrCreateAskOffer = async (punkOwnerAddress: string, logEvent: any): Promise<Offer> => {
+        const offerID: string = getGlobalId(logEvent).concat('-ASK');
+
+        let ask = await this.getOffer(offerID);
+        if (!ask) {
+            ask = new Offer({
+                id: offerID,
+                offerType: OfferType.ASK,
+                fromId: punkOwnerAddress,
+                open: true
+            });
+        }
+
+        return ask;
+    }
+
+    saveOffer = (offer: Offer, persist?: boolean) => {
         this.offers.set(offer.id, offer);
     }
 
@@ -322,31 +343,36 @@ export class EntityCache {
     };
 
 
-    persistCacheToDatabase = async (flushCache: boolean) => {
-        await this.ctx.store.upsert([...this.accounts.values()]);
-        await this.ctx.store.upsert([...this.contracts.values()]);
-        await this.ctx.store.upsert([...this.traits.values()]);
-        await this.ctx.store.upsert([...this.punks.values()]);
-        await this.ctx.store.upsert([...this.metadata.values()]);
-        await this.ctx.store.upsert([...this.eventEntities.values()]);
-        await this.ctx.store.upsert([...this.userProxies.values()]);
-        await this.ctx.store.upsert([...this.offers.values()]);
-        await this.ctx.store.upsert([...this.cTokens.values()]);
+    persistCacheToDatabase = async (flushCache: boolean, initialOrder?: boolean) => {
+
+        if (initialOrder) {
+            await this.ctx.store.upsert([...this.accounts.values()]);
+            await this.ctx.store.upsert([...this.contracts.values()]);
+            await this.ctx.store.upsert([...this.traits.values()]);
+            await this.ctx.store.upsert([...this.punks.values()]);
+            await this.ctx.store.upsert([...this.metadata.values()]);
+            await this.ctx.store.upsert([...this.eventEntities.values()]);
+            await this.ctx.store.upsert([...this.userProxies.values()]);
+            await this.ctx.store.upsert([...this.offers.values()]);
+            await this.ctx.store.upsert([...this.cTokens.values()]);
+        } else {
+            await this.ctx.store.upsert([...this.accounts.values()]);
+            await this.ctx.store.upsert([...this.contracts.values()]);
+            await this.ctx.store.upsert([...this.traits.values()]);
+            await this.ctx.store.upsert([...this.metadata.values()]);
+            await this.ctx.store.upsert([...this.eventEntities.values()]);
+            await this.ctx.store.upsert([...this.userProxies.values()]);
+            await this.ctx.store.upsert([...this.offers.values()]);
+            await this.ctx.store.upsert([...this.cTokens.values()]);
+            await this.ctx.store.upsert([...this.punks.values()]);
+        }
+
+
 
         await this.ctx.store.upsert([...this.metaDataTraits]);
 
         if (flushCache) {
-            this.accounts = new Map<string, Account>();
-            this.metadata = new Map<string, MetaData>();
-            this.contracts = new Map<string, Contract>();
-            this.eventEntities = new Map<string, Event>();
-            this.traits = new Map<string, Trait>();
-            this.punks = new Map<string, Punk>();
-            this.userProxies = new Map<string, UserProxy>();
-            this.offers = new Map<string, Offer>;
-            this.cTokens = new Map<string, CToken>;
-
-            this.metaDataTraits = [];
+            this.initializeMaps();
         }
     }
 }

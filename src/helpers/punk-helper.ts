@@ -5,7 +5,7 @@ export function createPunk(tokenId: bigint, owner: Account): Punk {
         id: tokenId.toString(),
         tokenId: tokenId,
         wrapped: false,
-        owner: owner,
+        ownerId: owner.id,
         numberOfTransfers: 0n,
         numberOfSales: 0n,
         totalAmountSpentOnPunk: 0n,
