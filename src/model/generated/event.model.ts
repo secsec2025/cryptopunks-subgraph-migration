@@ -21,6 +21,9 @@ export class Event {
     @ManyToOne_(() => Contract, {nullable: true})
     contract!: Contract | undefined | null
 
+    @Column_()
+    contractId!: string;
+
     /**
      * Punk that was assigned
      */

@@ -1,4 +1,16 @@
-import {Account, Contract, Event, EventType, MetaData, MetaDataTrait, Punk, Trait, TraitType} from './model';
+import {
+    Account,
+    Contract,
+    Event,
+    EventType,
+    MetaData,
+    MetaDataTrait,
+    Offer,
+    Punk,
+    Trait,
+    TraitType,
+    UserProxy
+} from './model';
 import {Store} from "@subsquid/typeorm-store";
 import {CONTRACT_URI, TOKEN_URI} from "./constants";
 import {getCryptoPunksContractDetails} from "./helpers/contract-helper";
@@ -13,6 +25,8 @@ export class EntityCache {
     public eventEntities: Map<string, Event>;
     public traits: Map<string, Trait>;
     public punks: Map<string, Punk>;
+    public userProxies: Map<string, UserProxy>;
+    public offers: Map<string, Offer>;
 
     public metaDataTraits: MetaDataTrait[];
 
@@ -27,6 +41,8 @@ export class EntityCache {
         this.eventEntities = new Map<string, Event>();
         this.traits = new Map<string, Trait>();
         this.punks = new Map<string, Punk>();
+        this.userProxies = new Map<string, UserProxy>();
+        this.offers = new Map<string, Offer>;
 
         this.metaDataTraits = [];
     }
@@ -160,6 +176,28 @@ export class EntityCache {
         return assignEvent;
     }
 
+    getOrCreateTransferEvent = async (punk: Punk, contractAddress: string, logEvent: any): Promise<Event> => {
+        const eventID: string = getGlobalId(logEvent);
+        let transferEvent = await this.getEvent(eventID);
+
+        if (!transferEvent) {
+            transferEvent = new Event({
+                id: eventID
+            });
+        }
+
+        transferEvent.timestamp = BigInt(logEvent.block.timestamp);
+        transferEvent.contractId = contractAddress;
+        transferEvent.blockNumber = BigInt(logEvent.block.height);
+        transferEvent.txHash = new Uint8Array(Buffer.from(logEvent.transactionHash, 'utf8'));
+        transferEvent.logNumber = BigInt(logEvent.logIndex);
+        transferEvent.blockHash = new Uint8Array(Buffer.from(logEvent.block.hash, 'utf8'));
+        transferEvent.type = EventType.TRANSFER;
+
+        this.eventEntities.set(transferEvent.id, transferEvent);
+        return transferEvent;
+    }
+
     saveEvent = (ev: Event) => {
         this.eventEntities.set(ev.id, ev);
     }
@@ -194,8 +232,47 @@ export class EntityCache {
     }
 
 
+    getOffer = async (offerID: string): Promise<Offer | undefined> => {
+        // Check if entity exists in cache
+        if (this.offers.has(offerID)) return this.offers.get(offerID);
+
+        // Check if exists in DB and save it to cache
+        const o = await this.ctx.store.get(Offer, offerID);
+        if (o) this.offers.set(offerID, o);
+        return o;
+    }
+
+    saveOffer = (offer: Offer) => {
+        this.offers.set(offer.id, offer);
+    }
+
+
+    getPunkByID = async (punkIndex: bigint): Promise<Punk | undefined> => {
+        const id: string = punkIndex.toString();
+        // Check if entity exists in cache
+        if (this.punks.has(id)) return this.punks.get(id);
+
+        // Check if exists in DB and save it to cache
+        const p = await this.ctx.store.get(Punk, id);
+        if (p) this.punks.set(id, p);
+        return p;
+    }
+
+
     savePunk = (p: Punk) => {
         this.punks.set(p.id, p);
+    }
+
+
+
+    getUserProxy = async (proxyID: string): Promise<UserProxy | undefined> => {
+        // Check if entity exists in cache
+        if (this.userProxies.has(proxyID)) return this.userProxies.get(proxyID);
+
+        // Check if exists in DB and save it to cache
+        const up = await this.ctx.store.get(UserProxy, proxyID);
+        if (up) this.userProxies.set(proxyID, up);
+        return up;
     }
 
 
@@ -217,6 +294,8 @@ export class EntityCache {
         await this.ctx.store.upsert([...this.punks.values()]);
         await this.ctx.store.upsert([...this.metadata.values()]);
         await this.ctx.store.upsert([...this.eventEntities.values()]);
+        await this.ctx.store.upsert([...this.userProxies.values()]);
+        await this.ctx.store.upsert([...this.offers.values()]);
 
         await this.ctx.store.upsert([...this.metaDataTraits]);
 
@@ -227,6 +306,8 @@ export class EntityCache {
             this.eventEntities = new Map<string, Event>();
             this.traits = new Map<string, Trait>();
             this.punks = new Map<string, Punk>();
+            this.userProxies = new Map<string, UserProxy>();
+            this.offers = new Map<string, Offer>;
 
             this.metaDataTraits = [];
         }

@@ -11,7 +11,7 @@ import {events as erc721SaleEvents } from './abi/ERC721Sale';
 import {events as raribleV1Events } from './abi/RaribleExchangeV1';
 import {events as openSeaEvents } from './abi/Opensea';
 
-import {handleAssign} from './mapping';
+import {handleAssign, handlePunkTransfer} from './mapping';
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -24,6 +24,12 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.Assign.topic) {
                 const {punkIndex, to} = cryptoPunksEvents.Assign.decode(e);
                 await handleAssign(punkIndex, to.toLowerCase(), CRYPTOPUNKS_CONTRACT_ADDRESS, e, entityCache);
+            }
+
+            // handlePunkTransfer
+            if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkTransfer.topic) {
+                const {punkIndex, from, to} = cryptoPunksEvents.PunkTransfer.decode(e);
+                await handlePunkTransfer(from.toLowerCase(), to.toLowerCase(), punkIndex, e, entityCache);
             }
 
         }
