@@ -2,7 +2,7 @@ import {EntityCache} from "./entity-cache";
 import {getTrait} from "./subgraph/traits";
 import {createPunk} from "./helpers/punk-helper";
 import {OfferType, Trait, TraitType} from "./model";
-import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS} from "./constants";
+import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountHoldings} from "./helpers/accounts-helper";
 
 
@@ -118,4 +118,29 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
     }
 
 
+}
+
+
+
+export async function handleTransfer(from: string, to: string, value: bigint, logEvent: any, entityCache: EntityCache) {
+    console.log(`Transfer Event ${value}`);
+    /**
+     @summary cToken as helper entity
+      e.g: https://etherscan.io/tx/0x23d6e24628dabf4fa92fa93630e5fa6f679fac75071aab38d7e307a3c0f4a3ca#eventlog
+     */
+    if (to === ZERO_ADDRESS) return;
+
+    let fromAccount = await entityCache.getOrCreateAccount(from);
+    let toAccount = await entityCache.getOrCreateAccount(to);
+    let cToken = await entityCache.getOrCreateCToken(logEvent);
+
+    cToken.from = fromAccount;
+    cToken.to = toAccount;
+    cToken.owner = to;
+    cToken.amount = value;
+
+    //Write
+    entityCache.saveCToken(cToken);
+    entityCache.saveAccount(toAccount);
+    entityCache.saveAccount(fromAccount);
 }

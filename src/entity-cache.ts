@@ -1,6 +1,6 @@
 import {
     Account,
-    Contract,
+    Contract, CToken,
     Event,
     EventType,
     MetaData,
@@ -27,6 +27,7 @@ export class EntityCache {
     public punks: Map<string, Punk>;
     public userProxies: Map<string, UserProxy>;
     public offers: Map<string, Offer>;
+    public cTokens: Map<string, CToken>;
 
     public metaDataTraits: MetaDataTrait[];
 
@@ -43,6 +44,7 @@ export class EntityCache {
         this.punks = new Map<string, Punk>();
         this.userProxies = new Map<string, UserProxy>();
         this.offers = new Map<string, Offer>;
+        this.cTokens = new Map<string, CToken>;
 
         this.metaDataTraits = [];
     }
@@ -232,6 +234,39 @@ export class EntityCache {
     }
 
 
+    getCToken = async (cTokenID: string): Promise<CToken | undefined> => {
+        // Check if entity exists in cache
+        if (this.cTokens.has(cTokenID)) return this.cTokens.get(cTokenID);
+
+        // Check if exists in DB and save it to cache
+        const t = await this.ctx.store.get(CToken, cTokenID);
+        if (t) this.cTokens.set(cTokenID, t);
+        return t;
+    }
+
+    getOrCreateCToken = async (logEvent: any): Promise<CToken> => {
+        const cTokenID: string = getGlobalId(logEvent);
+        let cToken = await this.getCToken(cTokenID);
+
+        if (!cToken) {
+            cToken = new CToken({
+                id: cTokenID,
+                referenceId: cTokenID,
+                blockNumber: BigInt(logEvent.block.height),
+                blockHash: new Uint8Array(Buffer.from(logEvent.block.hash, 'utf8')),
+                txHash: new Uint8Array(Buffer.from(logEvent.transactionHash, 'utf8')),
+                timestamp: BigInt(logEvent.block.timestamp)
+            });
+            this.cTokens.set(cTokenID, cToken);
+        }
+        return cToken;
+    }
+
+    saveCToken = (c: CToken) => {
+        this.cTokens.set(c.id, c);
+    }
+
+
     getOffer = async (offerID: string): Promise<Offer | undefined> => {
         // Check if entity exists in cache
         if (this.offers.has(offerID)) return this.offers.get(offerID);
@@ -296,6 +331,7 @@ export class EntityCache {
         await this.ctx.store.upsert([...this.eventEntities.values()]);
         await this.ctx.store.upsert([...this.userProxies.values()]);
         await this.ctx.store.upsert([...this.offers.values()]);
+        await this.ctx.store.upsert([...this.cTokens.values()]);
 
         await this.ctx.store.upsert([...this.metaDataTraits]);
 
@@ -308,6 +344,7 @@ export class EntityCache {
             this.punks = new Map<string, Punk>();
             this.userProxies = new Map<string, UserProxy>();
             this.offers = new Map<string, Offer>;
+            this.cTokens = new Map<string, CToken>;
 
             this.metaDataTraits = [];
         }

@@ -11,3 +11,5 @@ export const CRYPTOPUNKS_DATA_CONTRACT_ADDRESS = '0x16f5a35647d6f03d5d3da7b35409
 export const TOKEN_URI = 'https://cryptopunks.app/cryptopunks/details/';
 
 export const CONTRACT_URI = 'https://cryptopunks.app/cryptopunks';
+
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
