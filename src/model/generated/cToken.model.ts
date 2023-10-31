@@ -21,7 +21,7 @@ export class CToken {
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account
 
-    @Column_()
+    @Column_({nullable: true})
     fromId!: string;
 
     /**
@@ -31,7 +31,7 @@ export class CToken {
     @ManyToOne_(() => Account, {nullable: true})
     to!: Account
 
-    @Column_()
+    @Column_({nullable: true})
     toId!: string;
 
     /**

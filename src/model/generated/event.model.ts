@@ -21,7 +21,7 @@ export class Event {
     @ManyToOne_(() => Contract, {nullable: true})
     contract!: Contract | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     contractId!: string;
 
     /**
@@ -31,7 +31,7 @@ export class Event {
     @ManyToOne_(() => Punk, {nullable: true})
     nft!: Punk | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     nftId!: string | undefined | null;
 
     /**
@@ -41,7 +41,7 @@ export class Event {
     @ManyToOne_(() => Account, {nullable: true})
     to!: Account | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     toId!: string | undefined | null;
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: true})
@@ -51,11 +51,14 @@ export class Event {
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     fromId!: string | undefined | null;
 
     @Column_("varchar", {length: 11, nullable: false})
     type!: EventType
+
+    @Column_("varchar", {nullable: true})
+    offerId!: string | undefined | null;
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     logNumber!: bigint

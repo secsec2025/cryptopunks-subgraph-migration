@@ -56,7 +56,7 @@ export class MetaData {
     // @JoinColumn({ name: 'punkId' })
     punk!: Punk
 
-    @Column_()
+    @Column_({nullable: true})
     punkId!: string;
 
     /**

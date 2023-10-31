@@ -33,7 +33,7 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     transferedTo!: Account | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     transferedToId!: string | undefined | null;
 
     /**
@@ -43,7 +43,7 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     assignedTo!: Account | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     assignedToId!: string | undefined | null;
 
     /**
@@ -76,7 +76,7 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     owner!: Account
 
-    @Column_()
+    @Column_({nullable: true})
     ownerId!: string;
 
     /**
@@ -98,6 +98,9 @@ export class Punk {
     @ManyToOne_(() => Offer, {nullable: true})
     currentAsk!: Offer | undefined | null
 
+    @Column_({nullable: true})
+    currentAskId!: string | undefined | null;
+
     /**
      * Current Bid for Punk
      */
@@ -105,7 +108,7 @@ export class Punk {
     @ManyToOne_(() => Offer, {nullable: true})
     currentBid!: Offer | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     currentBidId!: string | undefined | null;
 
     /**
@@ -115,6 +118,9 @@ export class Punk {
     @ManyToOne_(() => Event, {nullable: true})
     currentAskCreated!: Event | undefined | null
 
+    @Column_({nullable: true})
+    currentAskCreatedId!: string | undefined | null;
+
     /**
      * Current BidCreated event
      */
@@ -122,7 +128,7 @@ export class Punk {
     @ManyToOne_(() => Event, {nullable: true})
     currentBidCreated!: Event | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     currentBidCreatedId!: string | undefined | null;
 
     /**
@@ -143,6 +149,9 @@ export class Punk {
     @Index_()
     @ManyToOne_(() => Event, {nullable: true})
     currentAskRemoved!: Event | undefined | null
+
+    @Column_({nullable: true})
+    currentAskRemovedId!: string | undefined | null;
 
     /**
      * Current BidRemoved event

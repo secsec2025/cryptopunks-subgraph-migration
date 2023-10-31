@@ -15,13 +15,13 @@ export class MetaDataTrait {
     @ManyToOne_(() => MetaData, {nullable: true})
     metadata!: MetaData
 
-    @Column_()
+    @Column_({nullable: true})
     metadataId!: string;
 
     @Index_()
     @ManyToOne_(() => Trait, {nullable: true})
     trait!: Trait
 
-    @Column_()
+    @Column_({nullable: true})
     traitId!: string;
 }

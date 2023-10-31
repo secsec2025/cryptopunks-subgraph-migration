@@ -21,7 +21,7 @@ export class Offer {
     @ManyToOne_(() => Account, {nullable: true})
     from!: Account
 
-    @Column_()
+    @Column_({nullable: true})
     fromId!: string;
 
     /**
@@ -43,6 +43,9 @@ export class Offer {
     @ManyToOne_(() => Punk, {nullable: true})
     nft!: Punk | undefined | null
 
+    @Column_({nullable: true})
+    nftId!: string | undefined | null;
+
     /**
      * Created at. Could be ASK or BID
      */
@@ -50,7 +53,7 @@ export class Offer {
     @ManyToOne_(() => Event, {nullable: true})
     created!: Event | undefined | null
 
-    @Column_()
+    @Column_({nullable: true})
     createdId!: string | undefined | null;
 
     /**
@@ -59,6 +62,9 @@ export class Offer {
     @Index_()
     @ManyToOne_(() => Event, {nullable: true})
     removed!: Event | undefined | null
+
+    @Column_({nullable: true})
+    removedId!: string | undefined | null;
 
     @Column_("varchar", {length: 3, nullable: false})
     offerType!: OfferType
