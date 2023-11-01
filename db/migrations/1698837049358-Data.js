@@ -1,5 +1,5 @@
-module.exports = class Data1698826112508 {
-    name = 'Data1698826112508'
+module.exports = class Data1698837049358 {
+    name = 'Data1698837049358'
 
     async up(db) {
         await db.query(`CREATE TABLE "trait" ("id" character varying NOT NULL, "type" character varying(9) NOT NULL, "number_of_nfts" numeric NOT NULL, CONSTRAINT "PK_c5d145e577199fe58afbf2a1b2d" PRIMARY KEY ("id"))`)
@@ -9,7 +9,7 @@ module.exports = class Data1698826112508 {
         await db.query(`CREATE TABLE "meta_data" ("id" character varying NOT NULL, "token_id" numeric NOT NULL, "token_uri" text NOT NULL, "image" text, "svg" text, "contract_uri" text NOT NULL, "punk_id" character varying, CONSTRAINT "REL_7c904f6769acce17917d2786f3" UNIQUE ("punk_id"), CONSTRAINT "PK_fc43762ebfedfc282ee84ba63d3" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_7c904f6769acce17917d2786f3" ON "meta_data" ("punk_id") `)
         await db.query(`CREATE TABLE "contract" ("id" character varying NOT NULL, "symbol" text, "name" text, "total_supply" numeric NOT NULL, "total_sales" numeric NOT NULL, "total_amount_traded" numeric NOT NULL, "image_hash" text, CONSTRAINT "PK_17c3a89f58a2997276084e706e8" PRIMARY KEY ("id"))`)
-        await db.query(`CREATE TABLE "offer" ("id" character varying NOT NULL, "from_id" character varying, "open" boolean NOT NULL, "amount" numeric NOT NULL, "nft_id" character varying, "created_id" character varying, "removed_id" character varying, "offer_type" character varying(3) NOT NULL, CONSTRAINT "REL_3016d78cdb8099a58d883ee54d" UNIQUE ("created_id"), CONSTRAINT "REL_709c5e5468058229b0cb7387d7" UNIQUE ("removed_id"), CONSTRAINT "PK_57c6ae1abe49201919ef68de900" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "offer" ("id" character varying NOT NULL, "from_id" character varying, "open" boolean NOT NULL, "amount" numeric NOT NULL, "nft_id" character varying, "created_id" character varying, "removed_id" character varying, "offer_type" character varying(3) NOT NULL, CONSTRAINT "REL_3016d78cdb8099a58d883ee54d" UNIQUE ("created_id"), CONSTRAINT "PK_57c6ae1abe49201919ef68de900" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_a48706ab0d0e6edaf3eeb72951" ON "offer" ("from_id") `)
         await db.query(`CREATE INDEX "IDX_71609884f4478ed41be6672a66" ON "offer" ("nft_id") `)
         await db.query(`CREATE INDEX "IDX_3016d78cdb8099a58d883ee54d" ON "offer" ("created_id") `)

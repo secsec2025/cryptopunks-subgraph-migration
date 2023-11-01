@@ -68,8 +68,8 @@ export class Event {
     @OneToOne_(() => Offer, offer => offer.created, {nullable: true})
     offerCreated!: Offer | undefined | null;
 
-    @OneToOne_(() => Offer, offer => offer.created, {nullable: true})
-    offerRemoved!: Offer | undefined | null;
+    // @OneToOne_(() => Offer, offer => offer.removed, {nullable: true})
+    // offerRemoved!: Offer | undefined | null;
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     logNumber!: bigint

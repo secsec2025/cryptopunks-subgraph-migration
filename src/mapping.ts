@@ -4,7 +4,7 @@ import {createPunk, updatePunkOwner, updatePunkSaleAggregates} from "./helpers/p
 import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountAggregates, updateAccountHoldings} from "./helpers/accounts-helper";
-import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
+import {closeOldAsk, createAskCreatedEvent, createAskRemovedEvent} from "./helpers/ask-helpers";
 import {closeOldBid, createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
 import {updateSale} from "./helpers/sale-helper";
 import {updateContractAggregates} from "./helpers/contract-helper";
@@ -363,5 +363,64 @@ export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAdd
         entityCache.saveContract(contract);
         entityCache.saveEvent(sale);
     }
+}
+
+
+export async function handlePunkNoLongerForSale(punkIndex: bigint, logEvent: any, entityCache: EntityCache) {
+    console.log(`handlePunkNoLongerForSale ${punkIndex}`);
+    /**
+     * @description
+     - This event fires when the owner removes their ask
+     - Also fires when the owner's Ask is accepted which closes their ask and creates a SaleEVENT
+     - SaleEvent is a regular PunkBoughtEVENT which we already captured in handlePunkBought()
+
+     - createAskRemovedEVENT
+     - close Old Ask
+     */
+    const punk = await entityCache.getPunkByID(punkIndex);
+
+    if (!punk) return;
+    const askRemoved = createAskRemovedEvent(punkIndex, logEvent);
+
+    //Close Old Ask
+    const oldAskId = punk.currentAskId;
+    if (oldAskId) {
+        const oldAsk = await entityCache.getOffer(oldAskId);
+        //Create relationship with AskRemoved
+        if (oldAsk && oldAsk.offerType === OfferType.ASK) {
+            oldAsk.removedId = askRemoved.id;
+            oldAsk.createdId = punk.currentAskCreatedId;
+            oldAsk.nftId = punk.id;
+            oldAsk.open = false;
+            oldAsk.fromId = punk.ownerId;
+
+            entityCache.saveOffer(oldAsk);
+        }
+
+    } else {
+        //https://cryptopunks.app/cryptopunks/details/2158
+        //This is a weird case where an offer can be withdrawn before it's created
+
+        const ask = await entityCache.getOrCreateAskOffer(punk.ownerId, logEvent);
+        ask.nftId = punk.id;
+        ask.open = false;
+        ask.fromId = punk.ownerId;
+        ask.removedId = askRemoved.id;
+
+        //Amount is 0 because this field is non-nullable & this basically initializes the field so it doesn't fail.
+        //Also, this event doesn't emit the amount.
+
+        ask.amount = 0n;
+        askRemoved.amount = 0n;
+
+        entityCache.saveOffer(ask);
+    }
+
+    punk.currentAskRemovedId = askRemoved.id;
+
+    //Write
+    entityCache.saveEvent(askRemoved);
+    entityCache.savePunk(punk);
+
 }
 

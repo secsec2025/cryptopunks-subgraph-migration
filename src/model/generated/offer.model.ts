@@ -69,8 +69,7 @@ export class Offer {
      * Removed at. Could be ASK or BID
      */
     @Index_()
-    @OneToOne_(() => Event, event => event.offerRemoved, {nullable: true})
-    @JoinColumn()
+    @ManyToOne_(() => Event, {nullable: true})
     removed!: Event | undefined | null
 
     @Column_({nullable: true})

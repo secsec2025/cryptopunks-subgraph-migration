@@ -16,7 +16,7 @@ import {events as openSeaEvents } from './abi/Opensea';
 import {
     handleAssign,
     handlePunkBidEntered,
-    handlePunkBidWithdrawn, handlePunkBought,
+    handlePunkBidWithdrawn, handlePunkBought, handlePunkNoLongerForSale,
     handlePunkOffered,
     handlePunkTransfer,
     handleTransfer
@@ -78,6 +78,12 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkBought.topic) {
                 const {punkIndex, value, fromAddress, toAddress} = cryptoPunksEvents.PunkBought.decode(e);
                 await handlePunkBought(punkIndex, value, fromAddress.toLowerCase(), toAddress.toLowerCase(), e, entityCache);
+            }
+
+            // handlePunkNoLongerForSale
+            if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkNoLongerForSale.topic) {
+                const {punkIndex} = cryptoPunksEvents.PunkNoLongerForSale.decode(e);
+                await handlePunkNoLongerForSale(punkIndex, e, entityCache);
             }
 
         }
