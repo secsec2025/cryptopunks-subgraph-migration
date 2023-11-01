@@ -14,13 +14,14 @@ import {events as raribleV1Events } from './abi/RaribleExchangeV1';
 import {events as openSeaEvents } from './abi/Opensea';
 
 import {
-    handleAssign,
+    handleAssign, handleProxyRegistered,
     handlePunkBidEntered,
     handlePunkBidWithdrawn, handlePunkBought, handlePunkNoLongerForSale,
     handlePunkOffered,
     handlePunkTransfer,
-    handleTransfer
+    handleTransfer, handleWrappedPunkTransfer
 } from './mapping';
+import {handleBuy} from "./marketplaces/ERC721Sale";
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -84,6 +85,24 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkNoLongerForSale.topic) {
                 const {punkIndex} = cryptoPunksEvents.PunkNoLongerForSale.decode(e);
                 await handlePunkNoLongerForSale(punkIndex, e, entityCache);
+            }
+
+            // handleWrappedPunkTransfer
+            if (e.address.toLowerCase() === WRAPPEDPUNKS_CONTRACT_ADDRESS && e.topics[0] === wrappedPunksEvents.Transfer.topic) {
+                const {from, to, tokenId} = wrappedPunksEvents.Transfer.decode(e);
+                await handleWrappedPunkTransfer(tokenId, from, to, e, entityCache);
+            }
+
+            // handleProxyRegistered
+            if (e.address.toLowerCase() === WRAPPEDPUNKS_CONTRACT_ADDRESS && e.topics[0] === wrappedPunksEvents.ProxyRegistered.topic) {
+                const {user, proxy} = wrappedPunksEvents.ProxyRegistered.decode(e);
+                await handleProxyRegistered(user, proxy, e, entityCache);
+            }
+
+            // handleBuy
+            if (e.address.toLowerCase() === ERC721SALE_CONTRACT_ADDRESS && e.topics[0] === erc721SaleEvents.Buy.topic) {
+                const {token, tokenId, seller, buyer, price, nonce} = erc721SaleEvents.Buy.decode(e);
+                await handleBuy(tokenId, buyer, seller, price, e, entityCache);
             }
 
         }

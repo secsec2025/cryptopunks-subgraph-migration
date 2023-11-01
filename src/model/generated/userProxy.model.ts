@@ -21,6 +21,9 @@ export class UserProxy {
     @ManyToOne_(() => Account, {nullable: true})
     user!: Account
 
+    @Column_({nullable: true})
+    userId!: string | undefined | null;
+
     /**
      * Transaction details
      */

@@ -15,7 +15,7 @@ import {
 } from './model';
 import {Store} from "@subsquid/typeorm-store";
 import {CONTRACT_URI, CRYPTOPUNKS_CONTRACT_ADDRESS, TOKEN_URI} from "./constants";
-import {getCryptoPunksContractDetails} from "./helpers/contract-helper";
+import {getCryptoPunksContractDetails, getWrappedCryptoPunksContractDetails} from "./helpers/contract-helper";
 import {DataHandlerContext} from "@subsquid/evm-processor";
 import {getGlobalId} from "./utils";
 
@@ -139,6 +139,35 @@ export class EntityCache {
         return contract;
     }
 
+    getOrCreateWrappedPunkContract = async (address: string): Promise<Contract> => {
+        let contract;
+        if (this.contracts.has(address))
+            contract = this.contracts.get(address);
+        else {
+            contract = await this.ctx.store.get(Contract, address);
+            if (contract) this.contracts.set(address, contract);
+        }
+
+        if (!contract) {
+            contract = new Contract({
+                id: address,
+                totalAmountTraded: 0n,
+                totalSales: 0n
+            });
+            const {name, symbol, totalSupply}
+                = await getWrappedCryptoPunksContractDetails(address, this.ctx);
+
+            contract.name = name;
+            contract.symbol = symbol;
+            contract.totalSupply = totalSupply;
+
+            this.contracts.set(address, contract);
+        }
+
+        return contract;
+
+    }
+
     saveContract = (c: Contract) => {
         this.contracts.set(c.id, c);
     }
@@ -183,7 +212,7 @@ export class EntityCache {
         return assignEvent;
     }
 
-    getOrCreateTransferEvent = async (punk: Punk, contractAddress: string, logEvent: any): Promise<Event> => {
+    getOrCreateTransferEvent = async (punkID: string, contractAddress: string, logEvent: any): Promise<Event> => {
         const eventID: string = getGlobalId(logEvent).concat('-TRANSFER');
         let transferEvent = await this.getEvent(eventID);
 
@@ -193,6 +222,7 @@ export class EntityCache {
             });
         }
 
+        transferEvent.nftId = punkID;
         transferEvent.timestamp = BigInt(logEvent.block.timestamp);
         transferEvent.contractId = contractAddress;
         transferEvent.blockNumber = BigInt(logEvent.block.height);
@@ -373,6 +403,10 @@ export class EntityCache {
         const up = await this.ctx.store.get(UserProxy, proxyID);
         if (up) this.userProxies.set(proxyID, up);
         return up;
+    }
+
+    saveUserProxy = (up: UserProxy) => {
+        this.userProxies.set(up.id, up);
     }
 
 

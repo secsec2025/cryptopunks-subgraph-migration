@@ -1,4 +1,5 @@
-import { Contract } from '../abi/cryptopunks';
+import { Contract as CryptoPunksContract } from '../abi/cryptopunks';
+import { Contract as WrappedPunksContract } from '../abi/wrappedpunks';
 import {Contract as ContractEntity} from '../model';
 
 
@@ -10,7 +11,7 @@ export const getCryptoPunksContractDetails = async (address: string, context: an
 }> => {
     const lastBlock = context.blocks[context.blocks.length - 1];
 
-    const contract: Contract = new Contract(context, lastBlock, address);
+    const contract: CryptoPunksContract = new CryptoPunksContract(context, lastBlock, address);
 
     try {
         const symbol = await contract.symbol();
@@ -24,6 +25,32 @@ export const getCryptoPunksContractDetails = async (address: string, context: an
             symbol: 'UNKNOWN',
             name: 'Unknown',
             imageHash: '-',
+            totalSupply: 0n
+        };
+    }
+
+}
+
+
+export const getWrappedCryptoPunksContractDetails = async (address: string, context: any): Promise<{
+    symbol: string,
+    name: string,
+    totalSupply: bigint
+}> => {
+    const lastBlock = context.blocks[context.blocks.length - 1];
+
+    const contract: WrappedPunksContract = new WrappedPunksContract(context, lastBlock, address);
+
+    try {
+        const symbol = await contract.symbol();
+        const name = await contract.name();
+        const totalSupply = await contract.totalSupply();
+        return {symbol, name, totalSupply};
+    } catch (e) {
+        console.log(`Unable to get details from the contract ${address}`);
+        return {
+            symbol: 'UNKNOWN',
+            name: 'Unknown',
             totalSupply: 0n
         };
     }

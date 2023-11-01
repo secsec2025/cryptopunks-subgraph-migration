@@ -1,13 +1,14 @@
 import {EntityCache} from "./entity-cache";
 import {getTrait} from "./subgraph/traits";
 import {createPunk, updatePunkOwner, updatePunkSaleAggregates} from "./helpers/punk-helper";
-import {OfferType, Trait, TraitType} from "./model";
+import {OfferType, Trait, TraitType, UserProxy} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountAggregates, updateAccountHoldings} from "./helpers/accounts-helper";
 import {closeOldAsk, createAskCreatedEvent, createAskRemovedEvent} from "./helpers/ask-helpers";
 import {closeOldBid, createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
 import {updateSale} from "./helpers/sale-helper";
 import {updateContractAggregates} from "./helpers/contract-helper";
+import {createUnwrap, createWrap} from "./helpers/wrap-helper";
 
 
 export async function handleAssign(punkIndex: bigint, to: string, contractAddress: string, logEvent: any, entityCache: EntityCache): Promise<void> {
@@ -71,7 +72,7 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
         if (!punk) return;
 
         punk.numberOfTransfers = punk.numberOfTransfers + 1n;
-        let transfer = await entityCache.getOrCreateTransferEvent(punk, CRYPTOPUNKS_CONTRACT_ADDRESS, logEvent);
+        let transfer = await entityCache.getOrCreateTransferEvent(punk.id, CRYPTOPUNKS_CONTRACT_ADDRESS, logEvent);
         transfer.fromId = fromAccount.id;
         transfer.toId = toAccount.id;
         transfer.nftId = punk.id;
@@ -367,7 +368,7 @@ export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAdd
 
 
 export async function handlePunkNoLongerForSale(punkIndex: bigint, logEvent: any, entityCache: EntityCache) {
-    console.log(`handlePunkNoLongerForSale ${punkIndex}`);
+    // console.log(`handlePunkNoLongerForSale ${punkIndex}`);
     /**
      * @description
      - This event fires when the owner removes their ask
@@ -424,3 +425,75 @@ export async function handlePunkNoLongerForSale(punkIndex: bigint, logEvent: any
 
 }
 
+
+
+export async function handleWrappedPunkTransfer(tokenID: bigint, from: string, to: string, logEvent: any, entityCache: EntityCache) {
+    console.log(`handleWrappedPunksTransfer tokenId: ${tokenID} from: ${from} to: ${to}`);
+
+    const contract = await entityCache.getOrCreateWrappedPunkContract(WRAPPEDPUNKS_CONTRACT_ADDRESS);
+
+    if (from === ZERO_ADDRESS) {
+        // A wrapped punk is minted (wrapped)
+        const wrap = createWrap(from, tokenID, logEvent);
+        contract.totalSupply = contract.totalSupply + 1n;
+        wrap.toId = to;
+
+        //Write
+        entityCache.saveEvent(wrap);
+    } else if (to === ZERO_ADDRESS) {
+        // A wrapped punk is burned (unwrapped)
+        const unWrap = createUnwrap(from, to, tokenID, logEvent);
+        contract.totalSupply = contract.totalSupply - 1n;
+
+        //Write
+        entityCache.saveEvent(unWrap);
+    } else {
+        //Wrapped Punk Transfer
+        //We do not want to save a transfer for wrapped punk mints/burns
+        const transfer = await entityCache.getOrCreateTransferEvent(tokenID.toString(), WRAPPEDPUNKS_CONTRACT_ADDRESS, logEvent);
+        const toAccount = await entityCache.getOrCreateAccount(to);
+        const fromAccount = await entityCache.getOrCreateAccount(from);
+        const punk = await entityCache.getPunkByID(tokenID);
+        if (!punk) return;
+
+        //We create a cToken Entity here to store IDs for future comparison
+        const cToken = await entityCache.getOrCreateCToken(logEvent);
+        cToken.fromId = from;
+        cToken.toId = to;
+        cToken.owner = to;
+        cToken.punkId = tokenID.toString();
+
+        //We need the contract address to filter our transactions from other marketplace(OpenSea,RaribleExchangeV1, ERC721Sale) sales
+        cToken.referenceId = WRAPPEDPUNKS_CONTRACT_ADDRESS;
+
+        transfer.fromId = fromAccount.id;
+        transfer.toId = toAccount.id;
+        transfer.nftId = punk.id;
+
+        updateAccountHoldings(toAccount, fromAccount)
+        punk.ownerId = toAccount.id
+        punk.numberOfTransfers = punk.numberOfTransfers + 1n;
+
+        //Write
+        entityCache.saveAccount(fromAccount);
+        entityCache.saveAccount(toAccount);
+        entityCache.saveEvent(transfer);
+        entityCache.saveCToken(cToken);
+        entityCache.savePunk(punk);
+    }
+
+    entityCache.saveContract(contract);
+}
+
+
+export async function handleProxyRegistered(user: string, proxy: string, logEvent: any, entityCache: EntityCache) {
+    let userProxy = new UserProxy({
+        id: proxy,
+        userId: user,
+        timestamp: BigInt(logEvent.block.timestamp),
+        blockNumber: BigInt(logEvent.block.height),
+        txHash: new Uint8Array(Buffer.from(logEvent.transactionHash, 'utf8')),
+        blockHash: new Uint8Array(Buffer.from(logEvent.block.hash, 'utf8'))
+    });
+    entityCache.saveUserProxy(userProxy);
+}
