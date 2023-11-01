@@ -92,31 +92,31 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             // handleWrappedPunkTransfer
             if (e.address.toLowerCase() === WRAPPEDPUNKS_CONTRACT_ADDRESS && e.topics[0] === wrappedPunksEvents.Transfer.topic) {
                 const {from, to, tokenId} = wrappedPunksEvents.Transfer.decode(e);
-                await handleWrappedPunkTransfer(tokenId, from, to, e, entityCache);
+                await handleWrappedPunkTransfer(tokenId, from.toLowerCase(), to.toLowerCase(), e, entityCache);
             }
 
             // handleProxyRegistered
             if (e.address.toLowerCase() === WRAPPEDPUNKS_CONTRACT_ADDRESS && e.topics[0] === wrappedPunksEvents.ProxyRegistered.topic) {
                 const {user, proxy} = wrappedPunksEvents.ProxyRegistered.decode(e);
-                await handleProxyRegistered(user, proxy, e, entityCache);
+                await handleProxyRegistered(user.toLowerCase(), proxy.toLowerCase(), e, entityCache);
             }
 
             // handleBuy
             if (e.address.toLowerCase() === ERC721SALE_CONTRACT_ADDRESS && e.topics[0] === erc721SaleEvents.Buy.topic) {
                 const { tokenId, seller, buyer, price} = erc721SaleEvents.Buy.decode(e);
-                await handleBuy(tokenId, buyer, seller, price, e, entityCache);
+                await handleBuy(tokenId, buyer.toLowerCase(), seller.toLowerCase(), price, e, entityCache);
             }
 
             // handleExchangeV1Buy
             if (e.address.toLowerCase() === RARIBLE_V1_CONTRACT_ADDRESS && e.topics[0] === raribleV1Events.Buy.topic) {
                 const {owner, buyValue, buyer, buyTokenId, sellTokenId} = raribleV1Events.Buy.decode(e);
-                await handleExchangeV1Buy(owner, buyer, buyValue, buyTokenId, sellTokenId, e, entityCache);
+                await handleExchangeV1Buy(owner.toLowerCase(), buyer.toLowerCase(), buyValue, buyTokenId, sellTokenId, e, entityCache);
             }
 
             // handleOpenSeaSale
             if (e.address.toLowerCase() === OPENSEA_CONTRACT_ADDRESS && e.topics[0] === openSeaEvents.OrdersMatched.topic) {
                 const {taker, maker, price} = openSeaEvents.OrdersMatched.decode(e);
-                await handleOpenSeaSale(taker, maker, price, e, entityCache);
+                await handleOpenSeaSale(taker.toLowerCase(), maker.toLowerCase(), price, e, entityCache);
             }
 
         }

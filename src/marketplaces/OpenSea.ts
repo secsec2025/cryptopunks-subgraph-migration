@@ -7,6 +7,7 @@ import {updateContractAggregates} from "../helpers/contract-helper";
 import {updatePunkSaleAggregates} from "../helpers/punk-helper";
 
 export async function handleOpenSeaSale(taker: string, maker: string, price: bigint, logEvent: any, entityCache: EntityCache): Promise<void> {
+    // console.log(`handleOpenSeaSale ${price}`);
     /**
      @summary OpenSea Contract - Track WRAPPEDPUNK sale
      @description:
@@ -51,7 +52,7 @@ export async function handleOpenSeaSale(taker: string, maker: string, price: big
                 entityCache.saveEvent(sale);
                 entityCache.saveAccount(toAccount);
                 entityCache.saveAccount(fromAccount);
-
+                // console.log(`Saving OpenSea Transfer (1) ${tokenId} - contract ${contract.id}`);
             } else if (makerAddress && makerAddress === maker) {
                 /**
                  @summary Logic for validating bidAccepted sale:
@@ -83,6 +84,7 @@ export async function handleOpenSeaSale(taker: string, maker: string, price: big
                 entityCache.saveEvent(sale);
                 entityCache.saveAccount(toAccount);
                 entityCache.saveAccount(fromAccount);
+                // console.log(`Saving OpenSea Transfer (2) ${tokenId} - contract ${contract.id}`);
             }
         }
     }

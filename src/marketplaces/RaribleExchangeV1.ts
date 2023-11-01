@@ -7,6 +7,7 @@ import {updateAccountAggregates} from "../helpers/accounts-helper";
 import {updatePunkSaleAggregates} from "../helpers/punk-helper";
 
 export async function handleExchangeV1Buy(owner: string, buyerParams: string, price: bigint, buyTokenId: bigint, sellTokenId: bigint, logEvent: any, entityCache: EntityCache): Promise<void> {
+    // console.log(`handleExchangeV1Buy Rarible ${buyTokenId}`);
     /**
      @summary RaribleExchangeV1 Contract - Track WRAPPEDPUNK SALE
      @description
@@ -57,6 +58,8 @@ export async function handleExchangeV1Buy(owner: string, buyerParams: string, pr
             entityCache.saveEvent(sale);
             entityCache.saveContract(contract);
             entityCache.savePunk(punk);
+
+            // console.log(`Saving Rarible Transfer (1) ${tokenId}`);
         } else if (trueBuyer && trueBuyer === buyerParams) {
             /**
              @summary - Logic for Regular Sale
@@ -84,6 +87,8 @@ export async function handleExchangeV1Buy(owner: string, buyerParams: string, pr
             entityCache.saveEvent(sale);
             entityCache.saveContract(contract);
             entityCache.savePunk(punk);
+
+            // console.log(`Saving Rarible Transfer (2) ${tokenId}`);
         }
     }
 }

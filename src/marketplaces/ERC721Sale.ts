@@ -8,6 +8,7 @@ import {updateContractAggregates} from "../helpers/contract-helper";
 import {updatePunkSaleAggregates} from "../helpers/punk-helper";
 
 export async function handleBuy(tokenID: bigint, buyer: string, seller: string, price: bigint, logEvent: any, entityCache: EntityCache) {
+    // console.log(`handleBuy ERC721Sale ${tokenID}`);
     /**
      @summary ERC721Sale Contract - Track WRAPPEDPUNK SALE
      @description
@@ -41,5 +42,6 @@ export async function handleBuy(tokenID: bigint, buyer: string, seller: string, 
         entityCache.saveEvent(sale);
         entityCache.savePunk(punk);
         entityCache.saveContract(contract);
+        // console.log(`Saving ERC721Sale Transfer ${tokenID}`);
     }
 }

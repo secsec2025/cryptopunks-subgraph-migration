@@ -428,7 +428,7 @@ export async function handlePunkNoLongerForSale(punkIndex: bigint, logEvent: any
 
 
 export async function handleWrappedPunkTransfer(tokenID: bigint, from: string, to: string, logEvent: any, entityCache: EntityCache) {
-    console.log(`handleWrappedPunksTransfer tokenId: ${tokenID} from: ${from} to: ${to}`);
+    // console.log(`handleWrappedPunksTransfer tokenId: ${tokenID} from: ${from} to: ${to}`);
 
     const contract = await entityCache.getOrCreateWrappedPunkContract(WRAPPEDPUNKS_CONTRACT_ADDRESS);
 
@@ -487,6 +487,8 @@ export async function handleWrappedPunkTransfer(tokenID: bigint, from: string, t
 
 
 export async function handleProxyRegistered(user: string, proxy: string, logEvent: any, entityCache: EntityCache) {
+    // console.log(`AdduserProxy ${user} txHash - ${logEvent.transactionHash}`);
+    const userEntity = await entityCache.getOrCreateAccount(user);
     let userProxy = new UserProxy({
         id: proxy,
         userId: user,

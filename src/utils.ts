@@ -59,7 +59,7 @@ export async function getMakerAddress(logEvent: any, entityCache: EntityCache): 
 
 
 export function getPriceAfterRaribleCut(price: bigint): bigint {
-    return BigInt(Number(price) * 0.975);
+    return BigInt(Math.floor(Number(price) * 0.975));
 }
 
 
