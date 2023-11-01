@@ -298,6 +298,21 @@ export class EntityCache {
         return ask;
     }
 
+    getOrCreateBidOffer = async (fromAddress: string, logEvent: any): Promise<Offer> => {
+        const offerID: string = getGlobalId(logEvent).concat('-BID');
+
+        let bid = await this.getOffer(offerID); //Should not be null
+        if (!bid) {
+            bid = new Offer({
+                id: offerID,
+                fromId: fromAddress,
+                offerType: OfferType.BID,
+                open: true
+            });
+        }
+        return bid;
+    }
+
     saveOffer = (offer: Offer, persist?: boolean) => {
         this.offers.set(offer.id, offer);
     }

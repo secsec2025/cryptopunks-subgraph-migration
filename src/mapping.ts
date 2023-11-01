@@ -5,6 +5,7 @@ import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountHoldings} from "./helpers/accounts-helper";
 import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
+import {createBidCreatedEvent} from "./helpers/bid-helpers";
 
 
 export async function handleAssign(punkIndex: bigint, to: string, contractAddress: string, logEvent: any, entityCache: EntityCache): Promise<void> {
@@ -182,4 +183,39 @@ export async function handlePunkOffered(punkIndex: bigint, minValue: bigint, toA
     entityCache.saveOffer(ask);
     entityCache.savePunk(punk);
 
+}
+
+
+export async function handlePunkBidEntered(punkIndex: bigint, fromAddress: string, value: bigint, logEvent: any, entityCache: EntityCache) {
+    // console.log(`handlePunkBidEntered ${punkIndex} to ${fromAddress}`);
+    /**
+     @summary This event first only fires when a bid is created
+     @description:
+      - createBidCreatedEVENT
+      - create Bid
+      - create relationship between Bid and BidCreated to provide information on creation EVENT
+     */
+
+    const bidCreated = createBidCreatedEvent(punkIndex, fromAddress, logEvent);
+    const punk = await entityCache.getPunkByID(punkIndex);
+    if (!punk) return;
+    const account = await entityCache.getOrCreateAccount(fromAddress);
+    const bid = await entityCache.getOrCreateBidOffer(fromAddress, logEvent);
+
+    bid.amount = value;
+    bid.nftId = punk.id;
+    bid.fromId = account.id;
+    bid.createdId = bidCreated.id;
+
+    bidCreated.amount = value;
+
+    //Update the currentBid for the punk in Punk entity for future reference
+    punk.currentBidId = bid.id;
+    punk.currentBidCreatedId = bidCreated.id;
+
+    //Write
+    entityCache.saveOffer(bid);
+    entityCache.savePunk(punk);
+    entityCache.saveAccount(account);
+    entityCache.saveEvent(bidCreated);
 }
