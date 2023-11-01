@@ -22,6 +22,7 @@ import {
     handleTransfer, handleWrappedPunkTransfer
 } from './mapping';
 import {handleBuy} from "./marketplaces/ERC721Sale";
+import {handleExchangeV1Buy} from "./marketplaces/RaribleExchangeV1";
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -101,8 +102,14 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
 
             // handleBuy
             if (e.address.toLowerCase() === ERC721SALE_CONTRACT_ADDRESS && e.topics[0] === erc721SaleEvents.Buy.topic) {
-                const {token, tokenId, seller, buyer, price, nonce} = erc721SaleEvents.Buy.decode(e);
+                const { tokenId, seller, buyer, price} = erc721SaleEvents.Buy.decode(e);
                 await handleBuy(tokenId, buyer, seller, price, e, entityCache);
+            }
+
+            // handleExchangeV1Buy
+            if (e.address.toLowerCase() === RARIBLE_V1_CONTRACT_ADDRESS && e.topics[0] === raribleV1Events.Buy.topic) {
+                const {owner, buyValue, buyer, buyTokenId, sellTokenId} = raribleV1Events.Buy.decode(e);
+                await handleExchangeV1Buy(owner, buyer, buyValue, buyTokenId, sellTokenId, e, entityCache);
             }
 
         }

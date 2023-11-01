@@ -36,3 +36,28 @@ export async function getContractAddress(logEvent: any, entityCache: EntityCache
     return cToken.referenceId
 }
 
+
+export async function getMakerAddress(logEvent: any, entityCache: EntityCache): Promise<string | null> {
+    /**
+     @description
+     - We only care about transactions concerning WrappedPunk contract saved from the WrappedPunk Transfer event.
+     - We need the maker address to validate a bid accepted sale in the OrderMatched() event
+     - The transfer always come first, so we need to provide the correct logIndex for cToken
+     - cToken should exist with the given ID in the same transaction at the time it's being called in the OrderMatched() event.
+     - if it doesn't then it's not a WrappedPunk transaction (null)
+     */
+    const cTokenLogIndex = logEvent.logIndex - 1;
+    const id = logEvent.transactionHash.concat('-').concat(cTokenLogIndex.toString());
+
+    let cToken = await entityCache.getCToken(id);
+
+    if (!cToken) {
+        return null;
+    }
+    return cToken.toId;
+}
+
+
+export function getPriceAfterRaribleCut(price: bigint): bigint {
+    return BigInt(Number(price) * 0.975);
+}
