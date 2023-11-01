@@ -23,6 +23,7 @@ import {
 } from './mapping';
 import {handleBuy} from "./marketplaces/ERC721Sale";
 import {handleExchangeV1Buy} from "./marketplaces/RaribleExchangeV1";
+import {handleOpenSeaSale} from "./marketplaces/OpenSea";
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -110,6 +111,12 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             if (e.address.toLowerCase() === RARIBLE_V1_CONTRACT_ADDRESS && e.topics[0] === raribleV1Events.Buy.topic) {
                 const {owner, buyValue, buyer, buyTokenId, sellTokenId} = raribleV1Events.Buy.decode(e);
                 await handleExchangeV1Buy(owner, buyer, buyValue, buyTokenId, sellTokenId, e, entityCache);
+            }
+
+            // handleOpenSeaSale
+            if (e.address.toLowerCase() === OPENSEA_CONTRACT_ADDRESS && e.topics[0] === openSeaEvents.OrdersMatched.topic) {
+                const {taker, maker, price} = openSeaEvents.OrdersMatched.decode(e);
+                await handleOpenSeaSale(taker, maker, price, e, entityCache);
             }
 
         }
