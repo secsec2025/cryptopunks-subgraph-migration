@@ -53,6 +53,9 @@ export class Punk {
     @ManyToOne_(() => Account, {nullable: true})
     purchasedBy!: Account | undefined | null
 
+    @Column_({nullable: true})
+    purchasedById!: string | undefined | null;
+
     @OneToOne_(() => MetaData, metadata => metadata.punk, {nullable: true})
     metadata!: MetaData | undefined | null
 

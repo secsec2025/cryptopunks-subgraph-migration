@@ -1,5 +1,5 @@
-module.exports = class Data1698821642724 {
-    name = 'Data1698821642724'
+module.exports = class Data1698826112508 {
+    name = 'Data1698826112508'
 
     async up(db) {
         await db.query(`CREATE TABLE "trait" ("id" character varying NOT NULL, "type" character varying(9) NOT NULL, "number_of_nfts" numeric NOT NULL, CONSTRAINT "PK_c5d145e577199fe58afbf2a1b2d" PRIMARY KEY ("id"))`)
@@ -19,7 +19,7 @@ module.exports = class Data1698821642724 {
         await db.query(`CREATE INDEX "IDX_9380d479563e5a664759359470" ON "event" ("nft_id") `)
         await db.query(`CREATE INDEX "IDX_3c07e2966f5f354edc1bf90fb5" ON "event" ("to_id") `)
         await db.query(`CREATE INDEX "IDX_1ef887466d1bba1027a21c28e6" ON "event" ("from_id") `)
-        await db.query(`CREATE TABLE "punk" ("id" character varying NOT NULL, "transfered_to_id" character varying, "assigned_to_id" character varying, "token_id" numeric NOT NULL, "owner_id" character varying, "wrapped" boolean NOT NULL, "current_ask_id" character varying, "current_bid_id" character varying, "current_ask_created_id" character varying, "current_bid_created_id" character varying, "number_of_transfers" numeric NOT NULL, "number_of_sales" numeric NOT NULL, "current_ask_removed_id" character varying, "current_bid_removed_id" character varying, "total_amount_spent_on_punk" numeric NOT NULL, "average_sale_price" numeric NOT NULL, "purchased_by_id" character varying, "contract_id" character varying, CONSTRAINT "PK_d63ed31964aae4be18cdacff38b" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "punk" ("id" character varying NOT NULL, "transfered_to_id" character varying, "assigned_to_id" character varying, "purchased_by_id" character varying, "token_id" numeric NOT NULL, "owner_id" character varying, "wrapped" boolean NOT NULL, "current_ask_id" character varying, "current_bid_id" character varying, "current_ask_created_id" character varying, "current_bid_created_id" character varying, "number_of_transfers" numeric NOT NULL, "number_of_sales" numeric NOT NULL, "current_ask_removed_id" character varying, "current_bid_removed_id" character varying, "total_amount_spent_on_punk" numeric NOT NULL, "average_sale_price" numeric NOT NULL, "contract_id" character varying, CONSTRAINT "PK_d63ed31964aae4be18cdacff38b" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_342776eb379a216795cc9f727d" ON "punk" ("transfered_to_id") `)
         await db.query(`CREATE INDEX "IDX_68b6c75e96f08033b03127e489" ON "punk" ("assigned_to_id") `)
         await db.query(`CREATE INDEX "IDX_78d46efff1a45a89276d26d85f" ON "punk" ("purchased_by_id") `)

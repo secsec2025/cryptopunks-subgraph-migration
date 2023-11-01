@@ -1,11 +1,13 @@
 import {EntityCache} from "./entity-cache";
 import {getTrait} from "./subgraph/traits";
-import {createPunk} from "./helpers/punk-helper";
+import {createPunk, updatePunkOwner, updatePunkSaleAggregates} from "./helpers/punk-helper";
 import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
-import {updateAccountHoldings} from "./helpers/accounts-helper";
+import {updateAccountAggregates, updateAccountHoldings} from "./helpers/accounts-helper";
 import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
 import {createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
+import {updateSale} from "./helpers/sale-helper";
+import {updateContractAggregates} from "./helpers/contract-helper";
 
 
 export async function handleAssign(punkIndex: bigint, to: string, contractAddress: string, logEvent: any, entityCache: EntityCache): Promise<void> {
@@ -257,3 +259,68 @@ export async function handlePunkBidWithdrawn(punkIndex: bigint, fromAddress: str
     entityCache.saveAccount(fromAccount);
     entityCache.saveEvent(bidRemoved);
 }
+
+
+export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAddress: string, toAddress: string, logEvent: any, entityCache: EntityCache) {
+    if (toAddress === ZERO_ADDRESS) {
+        console.log(`handlePunkBought ${punkIndex} -NULL ADDRESS`);
+        /**
+         * @summary
+         - Logic for tracking acceptBidForPunk(), BidAccepted
+         e.g https://etherscan.io/tx/0x23d6e24628dabf4fa92fa93630e5fa6f679fac75071aab38d7e307a3c0f4a3ca#eventlog
+
+         @description:
+          - createBidRemovedEvent
+          - close Old Bid only if bidder is the buyer
+          - close Old Ask since it has been sold
+          - createSaleEvent
+          - update aggregates for Account, Contract and Punk
+         */
+
+        const punk = await entityCache.getPunkByID(punkIndex);
+        if (!punk) return;
+        const contract = await entityCache.getOrCreateCryptoPunkContract(CRYPTOPUNKS_CONTRACT_ADDRESS);
+        const fromAccount = await entityCache.getOrCreateAccount(fromAddress);
+        const ownerAddress = await entityCache.getOwnerFromCToken(logEvent);
+        if (!ownerAddress) return;
+        const toAccount = await entityCache.getOrCreateAccount(ownerAddress);
+
+        const bidRemoved = createBidRemovedEvent(punkIndex, fromAddress, logEvent);
+        let sale = await entityCache.getOrCreateSale(punkIndex, fromAddress, logEvent);
+        await closeOldAsk(punk, fromAccount, entityCache);
+
+        //Close old bid if the bidder is the buyer & use the bid amount to update sale
+        let oldPunkBidId = punk.currentBidId;
+        if (oldPunkBidId) {
+            let oldBid = await entityCache.getOffer(oldPunkBidId);
+            if (!oldBid) return;
+            if (oldBid && oldBid.offerType === OfferType.BID && oldBid.fromId === toAccount.id) {
+                oldBid.createdId = punk.currentBidCreatedId;
+                oldBid.removedId = bidRemoved.id;
+                oldBid.nftId = punk.id;
+                oldBid.open = false;
+
+                entityCache.saveOffer(oldBid);
+            }
+            updateSale(sale, oldBid.amount, ownerAddress);
+            updateAccountAggregates(fromAccount, toAccount, oldBid.amount);
+            updatePunkSaleAggregates(punk, oldBid.amount);
+            updateContractAggregates(contract, oldBid.amount);
+        }
+
+        updatePunkOwner(punk, ownerAddress);
+        updateAccountHoldings(toAccount, fromAccount);
+
+        //Save the current BidRemoved for future reference
+        punk.currentBidRemovedId = bidRemoved.id;
+
+        //Write
+        entityCache.saveContract(contract);
+        entityCache.savePunk(punk);
+        entityCache.saveEvent(sale);
+        entityCache.saveEvent(bidRemoved);
+        entityCache.saveAccount(toAccount);
+        entityCache.saveAccount(fromAccount);
+    }
+}
+

@@ -5,7 +5,7 @@ import {EntityCache} from "../entity-cache";
 
 export function createAskCreatedEvent(punkIndex: bigint, logEvent: any): Event {
     return new Event({
-        id: getGlobalId(logEvent),
+        id: getGlobalId(logEvent).concat('-ASK_CREATED'),
         type: EventType.ASK_CREATED,
         nftId: punkIndex.toString(),
         logNumber: BigInt(logEvent.logIndex),

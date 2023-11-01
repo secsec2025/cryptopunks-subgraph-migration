@@ -14,7 +14,7 @@ import {
     UserProxy
 } from './model';
 import {Store} from "@subsquid/typeorm-store";
-import {CONTRACT_URI, TOKEN_URI} from "./constants";
+import {CONTRACT_URI, CRYPTOPUNKS_CONTRACT_ADDRESS, TOKEN_URI} from "./constants";
 import {getCryptoPunksContractDetails} from "./helpers/contract-helper";
 import {DataHandlerContext} from "@subsquid/evm-processor";
 import {getGlobalId} from "./utils";
@@ -184,7 +184,7 @@ export class EntityCache {
     }
 
     getOrCreateTransferEvent = async (punk: Punk, contractAddress: string, logEvent: any): Promise<Event> => {
-        const eventID: string = getGlobalId(logEvent);
+        const eventID: string = getGlobalId(logEvent).concat('-TRANSFER');
         let transferEvent = await this.getEvent(eventID);
 
         if (!transferEvent) {
@@ -203,6 +203,29 @@ export class EntityCache {
 
         this.eventEntities.set(transferEvent.id, transferEvent);
         return transferEvent;
+    }
+
+    getOrCreateSale = async (punkIndex: bigint, fromAddress: string, logEvent: any): Promise<Event> => {
+        const eventID: string = getGlobalId(logEvent).concat('-SALE');
+        let saleEvent = await this.getEvent(eventID);
+
+        if (!saleEvent) {
+            saleEvent = new Event({
+                id: eventID,
+                type: EventType.SALE,
+                timestamp: BigInt(logEvent.block.timestamp),
+                contractId: CRYPTOPUNKS_CONTRACT_ADDRESS,
+                blockNumber: BigInt(logEvent.block.height),
+                logNumber: BigInt(logEvent.logIndex),
+                txHash: new Uint8Array(Buffer.from(logEvent.transactionHash, 'utf8')),
+                blockHash: new Uint8Array(Buffer.from(logEvent.block.hash, 'utf8')),
+            });
+        }
+        saleEvent.fromId = fromAddress;
+        saleEvent.nftId = punkIndex.toString();
+
+        this.eventEntities.set(saleEvent.id, saleEvent);
+        return saleEvent;
     }
 
     saveEvent = (ev: Event): void => {
@@ -265,6 +288,12 @@ export class EntityCache {
             this.cTokens.set(cTokenID, cToken);
         }
         return cToken;
+    }
+
+    getOwnerFromCToken = async (logEvent: any): Promise<string | undefined> => {
+        const transferEventCTokenID = getGlobalId(logEvent, -1);
+        const cToken = await this.getCToken(transferEventCTokenID);
+        return cToken?.owner;
     }
 
     saveCToken = (c: CToken) => {

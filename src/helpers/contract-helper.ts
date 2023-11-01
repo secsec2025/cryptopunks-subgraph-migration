@@ -1,4 +1,5 @@
 import { Contract } from '../abi/cryptopunks';
+import {Contract as ContractEntity} from '../model';
 
 
 export const getCryptoPunksContractDetails = async (address: string, context: any): Promise<{
@@ -27,5 +28,11 @@ export const getCryptoPunksContractDetails = async (address: string, context: an
         };
     }
 
+}
 
+
+export function updateContractAggregates(contract: ContractEntity, price: bigint): void {
+    //Update contract aggregates
+    contract.totalSales = contract.totalSales + 1n;
+    contract.totalAmountTraded = contract.totalAmountTraded + price;
 }

@@ -4,7 +4,7 @@ import {CRYPTOPUNKS_CONTRACT_ADDRESS} from "../constants";
 
 export function createBidCreatedEvent(punkIndex: bigint, fromAddress: string, logEvent: any): Event {
     return new Event({
-        id: getGlobalId(logEvent),
+        id: getGlobalId(logEvent).concat('-BID_CREATED'),
         type: EventType.BID_CREATED,
         nftId: punkIndex.toString(),
         fromId: fromAddress,
@@ -20,7 +20,7 @@ export function createBidCreatedEvent(punkIndex: bigint, fromAddress: string, lo
 
 export function createBidRemovedEvent(punkIndex: bigint, fromAddress: string, logEvent: any): Event {
     return new Event({
-        id: getGlobalId(logEvent),
+        id: getGlobalId(logEvent).concat('-BID_REMOVED'),
         type: EventType.BID_REMOVED,
         nftId: punkIndex.toString(),
         fromId: fromAddress,
