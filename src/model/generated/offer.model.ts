@@ -1,4 +1,12 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
+import {
+    Entity as Entity_,
+    Column as Column_,
+    PrimaryColumn as PrimaryColumn_,
+    ManyToOne as ManyToOne_,
+    OneToOne as OneToOne_,
+    Index as Index_,
+    JoinColumn
+} from "typeorm"
 import * as marshal from "./marshal"
 import {Account} from "./account.model"
 import {Punk} from "./punk.model"
@@ -50,7 +58,8 @@ export class Offer {
      * Created at. Could be ASK or BID
      */
     @Index_()
-    @ManyToOne_(() => Event, {nullable: true})
+    @OneToOne_(() => Event, event => event.offerCreated, {nullable: true})
+    @JoinColumn()
     created!: Event | undefined | null
 
     @Column_({nullable: true})
@@ -60,7 +69,8 @@ export class Offer {
      * Removed at. Could be ASK or BID
      */
     @Index_()
-    @ManyToOne_(() => Event, {nullable: true})
+    @OneToOne_(() => Event, event => event.offerRemoved, {nullable: true})
+    @JoinColumn()
     removed!: Event | undefined | null
 
     @Column_({nullable: true})

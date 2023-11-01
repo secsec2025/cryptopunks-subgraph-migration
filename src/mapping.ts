@@ -169,7 +169,6 @@ export async function handlePunkOffered(punkIndex: bigint, minValue: bigint, toA
     ask.createdId = askCreated.id
     ask.open = true
 
-    askCreated.offerId = ask.id;
     askCreated.toId = toAddress;
     askCreated.fromId = punk.ownerId;
     askCreated.amount = minValue;
@@ -182,6 +181,5 @@ export async function handlePunkOffered(punkIndex: bigint, minValue: bigint, toA
     entityCache.saveEvent(askCreated);
     entityCache.saveOffer(ask);
     entityCache.savePunk(punk);
-
 
 }

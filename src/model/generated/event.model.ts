@@ -1,9 +1,17 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
+import {
+    Entity as Entity_,
+    Column as Column_,
+    PrimaryColumn as PrimaryColumn_,
+    ManyToOne as ManyToOne_,
+    Index as Index_,
+    OneToOne as OneToOne_
+} from "typeorm"
 import * as marshal from "./marshal"
 import {Contract} from "./contract.model"
 import {Punk} from "./punk.model"
 import {Account} from "./account.model"
 import {EventType} from "./_eventType"
+import {Offer} from "./offer.model";
 
 @Entity_()
 export class Event {
@@ -57,8 +65,11 @@ export class Event {
     @Column_("varchar", {length: 11, nullable: false})
     type!: EventType
 
-    @Column_("varchar", {nullable: true})
-    offerId!: string | undefined | null;
+    @OneToOne_(() => Offer, offer => offer.created, {nullable: true})
+    offerCreated!: Offer | undefined | null;
+
+    @OneToOne_(() => Offer, offer => offer.created, {nullable: true})
+    offerRemoved!: Offer | undefined | null;
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     logNumber!: bigint
