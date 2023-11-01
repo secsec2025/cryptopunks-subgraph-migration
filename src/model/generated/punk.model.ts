@@ -160,6 +160,9 @@ export class Punk {
     @ManyToOne_(() => Event, {nullable: true})
     currentBidRemoved!: Event | undefined | null
 
+    @Column_({nullable: true})
+    currentBidRemovedId!: string | undefined | null;
+
     /**
      * Total amount spent purchasing Punk across OpenSea & Rarible marketplaces
      */

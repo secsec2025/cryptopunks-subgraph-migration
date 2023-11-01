@@ -5,7 +5,7 @@ import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountHoldings} from "./helpers/accounts-helper";
 import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
-import {createBidCreatedEvent} from "./helpers/bid-helpers";
+import {createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
 
 
 export async function handleAssign(punkIndex: bigint, to: string, contractAddress: string, logEvent: any, entityCache: EntityCache): Promise<void> {
@@ -21,7 +21,7 @@ export async function handleAssign(punkIndex: bigint, to: string, contractAddres
     let punk = createPunk(tokenId, account);
     let assign = await entityCache.getOrCreateAssignEvent(contract, account, punk, metadata, logEvent);
 
-    if (trait !== null) {
+    if (trait) {
         let traits = new Array<Trait>();
         let type = await entityCache.getOrCreateTrait(trait.type, TraitType.TYPE);
         type.numberOfNfts = type.numberOfNfts + 1n;
@@ -60,7 +60,7 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
     if (toProxy) {
         // log.debug('PunkTransfer to proxy detected toProxy: {} ', [toProxy.id])
         return
-    } else if (receiver != WRAPPEDPUNKS_CONTRACT_ADDRESS && sender != WRAPPEDPUNKS_CONTRACT_ADDRESS) {
+    } else if (receiver !== WRAPPEDPUNKS_CONTRACT_ADDRESS && sender !== WRAPPEDPUNKS_CONTRACT_ADDRESS) {
         // log.debug('Regular punk transfer check: {} ', [tokenId]);
 
         let toAccount = await entityCache.getOrCreateAccount(receiver);
@@ -121,7 +121,6 @@ export async function handlePunkTransfer(sender: string, receiver: string, token
 
 
 }
-
 
 
 export async function handleTransfer(from: string, to: string, value: bigint, logEvent: any, entityCache: EntityCache) {
@@ -218,4 +217,43 @@ export async function handlePunkBidEntered(punkIndex: bigint, fromAddress: strin
     entityCache.savePunk(punk);
     entityCache.saveAccount(account);
     entityCache.saveEvent(bidCreated);
+}
+
+
+export async function handlePunkBidWithdrawn(punkIndex: bigint, fromAddress: string, value: bigint, logEvent: any, entityCache: EntityCache) {
+    // console.log(`handlePunkBidWithdrawn ${punkIndex} to ${fromAddress}`);
+    /**
+     @summary: The event fires anytime a bidder withdraws their bid
+     @description:
+      - createBidRemovedEVENT
+      - close Old Bid
+      - create relationship between Bid and BidRemoved
+     */
+
+    const fromAccount = await entityCache.getOrCreateAccount(fromAddress);
+    const punk = await entityCache.getPunkByID(punkIndex);
+    if (!punk) return;
+    const bidRemoved = createBidRemovedEvent(punkIndex, fromAddress, logEvent);
+    bidRemoved.amount = value;
+    bidRemoved.nftId = punk.id;
+
+    let oldBidId = punk.currentBidId;
+    if (oldBidId) {
+        const oldBid = await entityCache.getOffer(oldBidId);
+        if (oldBid) {
+            oldBid.createdId = punk.currentBidCreatedId;
+            oldBid.fromId = fromAccount.id;
+            oldBid.open = false;
+            oldBid.removedId = bidRemoved.id;
+            entityCache.saveOffer(oldBid);
+        }
+    }
+
+    //Update Punk fields with current bid removal EVENT, so we can reference them elsewhere
+    punk.currentBidRemovedId = bidRemoved.id;
+
+    //Write
+    entityCache.savePunk(punk);
+    entityCache.saveAccount(fromAccount);
+    entityCache.saveEvent(bidRemoved);
 }

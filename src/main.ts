@@ -13,7 +13,14 @@ import {events as erc721SaleEvents } from './abi/ERC721Sale';
 import {events as raribleV1Events } from './abi/RaribleExchangeV1';
 import {events as openSeaEvents } from './abi/Opensea';
 
-import {handleAssign, handlePunkBidEntered, handlePunkOffered, handlePunkTransfer, handleTransfer} from './mapping';
+import {
+    handleAssign,
+    handlePunkBidEntered,
+    handlePunkBidWithdrawn,
+    handlePunkOffered,
+    handlePunkTransfer,
+    handleTransfer
+} from './mapping';
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -59,6 +66,12 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
             if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkBidEntered.topic) {
                 const {punkIndex, fromAddress, value} = cryptoPunksEvents.PunkBidEntered.decode(e);
                 await handlePunkBidEntered(punkIndex, fromAddress.toLowerCase(), value, e, entityCache);
+            }
+
+            // handlePunkBidWithdrawn
+            if (e.address.toLowerCase() === CRYPTOPUNKS_CONTRACT_ADDRESS && e.topics[0] === cryptoPunksEvents.PunkBidWithdrawn.topic) {
+                const {punkIndex, fromAddress, value} = cryptoPunksEvents.PunkBidWithdrawn.decode(e);
+                await handlePunkBidWithdrawn(punkIndex, fromAddress.toLowerCase(), value, e, entityCache);
             }
 
         }
