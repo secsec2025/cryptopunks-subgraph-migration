@@ -5,7 +5,7 @@ import {OfferType, Trait, TraitType} from "./model";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS, WRAPPEDPUNKS_CONTRACT_ADDRESS, ZERO_ADDRESS} from "./constants";
 import {updateAccountAggregates, updateAccountHoldings} from "./helpers/accounts-helper";
 import {closeOldAsk, createAskCreatedEvent} from "./helpers/ask-helpers";
-import {createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
+import {closeOldBid, createBidCreatedEvent, createBidRemovedEvent} from "./helpers/bid-helpers";
 import {updateSale} from "./helpers/sale-helper";
 import {updateContractAggregates} from "./helpers/contract-helper";
 
@@ -263,7 +263,7 @@ export async function handlePunkBidWithdrawn(punkIndex: bigint, fromAddress: str
 
 export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAddress: string, toAddress: string, logEvent: any, entityCache: EntityCache) {
     if (toAddress === ZERO_ADDRESS) {
-        console.log(`handlePunkBought ${punkIndex} -NULL ADDRESS`);
+        // console.log(`handlePunkBought ${punkIndex} -NULL ADDRESS`);
         /**
          * @summary
          - Logic for tracking acceptBidForPunk(), BidAccepted
@@ -286,7 +286,7 @@ export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAdd
         const toAccount = await entityCache.getOrCreateAccount(ownerAddress);
 
         const bidRemoved = createBidRemovedEvent(punkIndex, fromAddress, logEvent);
-        let sale = await entityCache.getOrCreateSale(punkIndex, fromAddress, logEvent);
+        let sale = await entityCache.getOrCreateSaleEvent(punkIndex, fromAddress, logEvent);
         await closeOldAsk(punk, fromAccount, entityCache);
 
         //Close old bid if the bidder is the buyer & use the bid amount to update sale
@@ -321,6 +321,47 @@ export async function handlePunkBought(punkIndex: bigint, value: bigint, fromAdd
         entityCache.saveEvent(bidRemoved);
         entityCache.saveAccount(toAccount);
         entityCache.saveAccount(fromAccount);
+
+    } else {
+
+        // console.log(`handlePunkBought ${punkIndex} -NORMAL ADDRESS`);
+        /**
+         @summary Logic for tracking Regular PunkBought
+         @description: This also implicitly captures AskAccepted for Punk which is updated in PunkNoLongerForSaleEVENT(Close Ask)
+          Example: https://etherscan.io/tx/0x0004ba250b29b0e2cda2e882c8bf5a14e7d2133e63bf0334fb1f44c716ccb187#eventlog
+          - buyPunk() does not emit a PunkTransfer event, so we need to keep track
+          - createSaleEvent
+          - close Old Bid if bidder is buyer
+          - close Old Ask
+         */
+
+        const price = value;
+        const seller = fromAddress;
+        const buyer = toAddress;
+
+        const punk = await entityCache.getPunkByID(punkIndex);
+        if (!punk) return;
+        const contract = await entityCache.getOrCreateCryptoPunkContract(CRYPTOPUNKS_CONTRACT_ADDRESS);
+        const fromAccount = await entityCache.getOrCreateAccount(seller);
+        const toAccount = await entityCache.getOrCreateAccount(buyer);
+
+        const sale = await entityCache.getOrCreateSaleEvent(punkIndex, seller, logEvent);
+
+        updateSale(sale, price, buyer);
+        await closeOldBid(punk, toAccount.id, entityCache);
+        await closeOldAsk(punk, fromAccount, entityCache);
+        updatePunkOwner(punk, buyer);
+        updatePunkSaleAggregates(punk, price);
+        updateContractAggregates(contract, price);
+        updateAccountHoldings(toAccount, fromAccount);
+        updateAccountAggregates(fromAccount, toAccount, price);
+
+        //Write
+        entityCache.savePunk(punk);
+        entityCache.saveAccount(fromAccount);
+        entityCache.saveAccount(toAccount);
+        entityCache.saveContract(contract);
+        entityCache.saveEvent(sale);
     }
 }
 

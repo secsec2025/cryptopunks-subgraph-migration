@@ -1,6 +1,7 @@
-import {Event, EventType} from "../model";
+import {Event, EventType, OfferType, Punk} from "../model";
 import {getGlobalId} from "../utils";
 import {CRYPTOPUNKS_CONTRACT_ADDRESS} from "../constants";
+import {EntityCache} from "../entity-cache";
 
 export function createBidCreatedEvent(punkIndex: bigint, fromAddress: string, logEvent: any): Event {
     return new Event({
@@ -32,3 +33,19 @@ export function createBidRemovedEvent(punkIndex: bigint, fromAddress: string, lo
         contractId: CRYPTOPUNKS_CONTRACT_ADDRESS
     });
 }
+
+
+export async function closeOldBid(punk: Punk, toAccount: string, entityCache: EntityCache): Promise<void> {
+    const oldBidId = punk.currentBidId;
+
+    if (oldBidId) {
+        const oldBid = await entityCache.getOffer(oldBidId);
+        if (oldBid && oldBid.offerType === OfferType.BID && oldBid.fromId === toAccount) {
+            oldBid.createdId = punk.currentBidCreatedId;
+            oldBid.open = false;
+            entityCache.saveOffer(oldBid);
+        }
+    }
+}
+
+

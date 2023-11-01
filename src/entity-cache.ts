@@ -205,7 +205,7 @@ export class EntityCache {
         return transferEvent;
     }
 
-    getOrCreateSale = async (punkIndex: bigint, fromAddress: string, logEvent: any): Promise<Event> => {
+    getOrCreateSaleEvent = async (punkIndex: bigint, fromAddress: string, logEvent: any): Promise<Event> => {
         const eventID: string = getGlobalId(logEvent).concat('-SALE');
         let saleEvent = await this.getEvent(eventID);
 
