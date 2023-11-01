@@ -9,9 +9,8 @@ export const getCryptoPunksContractDetails = async (address: string, context: an
     imageHash: string,
     totalSupply: bigint
 }> => {
-    const lastBlock = context.blocks[context.blocks.length - 1];
-
-    const contract: CryptoPunksContract = new CryptoPunksContract(context, lastBlock, address);
+    const contract: CryptoPunksContract
+        = new CryptoPunksContract(context, context.blocks[context.blocks.length - 1].header, address);
 
     try {
         const symbol = await contract.symbol();
@@ -20,6 +19,7 @@ export const getCryptoPunksContractDetails = async (address: string, context: an
         const totalSupply = await contract.totalSupply();
         return {symbol, name, imageHash, totalSupply};
     } catch (e) {
+        console.log(e);
         console.log(`Unable to get details from the contract ${address}`);
         return {
             symbol: 'UNKNOWN',
@@ -37,9 +37,8 @@ export const getWrappedCryptoPunksContractDetails = async (address: string, cont
     name: string,
     totalSupply: bigint
 }> => {
-    const lastBlock = context.blocks[context.blocks.length - 1];
-
-    const contract: WrappedPunksContract = new WrappedPunksContract(context, lastBlock, address);
+    const contract: WrappedPunksContract
+        = new WrappedPunksContract(context, context.blocks[context.blocks.length - 1].header, address);
 
     try {
         const symbol = await contract.symbol();
