@@ -1,5 +1,5 @@
-module.exports = class Data1698837049358 {
-    name = 'Data1698837049358'
+module.exports = class Data1698932841399 {
+    name = 'Data1698932841399'
 
     async up(db) {
         await db.query(`CREATE TABLE "trait" ("id" character varying NOT NULL, "type" character varying(9) NOT NULL, "number_of_nfts" numeric NOT NULL, CONSTRAINT "PK_c5d145e577199fe58afbf2a1b2d" PRIMARY KEY ("id"))`)
@@ -35,7 +35,7 @@ module.exports = class Data1698837049358 {
         await db.query(`CREATE TABLE "c_token" ("id" character varying NOT NULL, "from_id" character varying, "to_id" character varying, "owner" text NOT NULL, "amount" numeric, "punk_id" text, "reference_id" text NOT NULL, "block_number" numeric NOT NULL, "block_hash" bytea NOT NULL, "tx_hash" bytea NOT NULL, "timestamp" numeric NOT NULL, CONSTRAINT "PK_4a1ef8720df75466d63b7ac97bd" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_e4b7c1b8bc4d8698a91db8c029" ON "c_token" ("from_id") `)
         await db.query(`CREATE INDEX "IDX_3c463372f6cccc1e0b0379a030" ON "c_token" ("to_id") `)
-        await db.query(`CREATE TABLE "user_proxy" ("id" character varying NOT NULL, "block_number" numeric NOT NULL, "block_hash" bytea NOT NULL, "tx_hash" bytea NOT NULL, "timestamp" numeric NOT NULL, "user_id" character varying, CONSTRAINT "PK_4a159461ced957cbbea0a94bed7" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "user_proxy" ("id" character varying NOT NULL, "user_id" character varying, "block_number" numeric NOT NULL, "block_hash" bytea NOT NULL, "tx_hash" bytea NOT NULL, "timestamp" numeric NOT NULL, CONSTRAINT "PK_4a159461ced957cbbea0a94bed7" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_e17dc32bcf20e9d45531e5f18d" ON "user_proxy" ("user_id") `)
         await db.query(`CREATE TABLE "epns_notification_counter" ("id" character varying NOT NULL, "total_count" numeric NOT NULL, CONSTRAINT "PK_e8adae4d21bb9369c795048ea2e" PRIMARY KEY ("id"))`)
         await db.query(`CREATE TABLE "epns_push_notification" ("id" character varying NOT NULL, "notification_number" numeric NOT NULL, "recipient" text NOT NULL, "notification" text NOT NULL, CONSTRAINT "PK_3b1135305c3029eb8b764f93f16" PRIMARY KEY ("id"))`)

@@ -29,23 +29,32 @@ type Account @entity {
   "All Punks owned by Account"
   punksOwned: [Punk!] @derivedFrom(field: "owner")
 
-  "Purchases by Account"
-  bought: [Event!]! @derivedFrom(field: "to")
+  "Events to Account"
+  eventsTo: [Event!]! @derivedFrom(field: "to")
 
-  "Punks assigned to account (if any)"
-  assigned: [Event!]! @derivedFrom(field: "to")
+  "Events from Account"
+  eventsFrom: [Event!]! @derivedFrom(field: "from")
 
-  "Punk transfers by Account"
-  sent: [Event!]! @derivedFrom(field: "from")
+#  "Purchases by Account"
+#  bought: [Event!]! @derivedFrom(field: "to")
+#
+#  "Punks assigned to account (if any)"
+#  assigned: [Event!]! @derivedFrom(field: "to")
 
-  "Punk transfers to Account"
-  received: [Event!]! @derivedFrom(field: "to")
+#  "Punk transfers by Account"
+#  sent: [Event!]! @derivedFrom(field: "from")
+#
+#  "Punk transfers to Account"
+#  received: [Event!]! @derivedFrom(field: "to")
 
-  "Query bids by Account"
-  bids: [Offer!]! @derivedFrom(field: "from")
+  "Offers (BID/ASK) by Account"
+  offers:  [Offer!]! @derivedFrom(field: "from")
 
-  "Punks offered for sale by Account"
-  asks: [Offer!]! @derivedFrom(field: "from")
+#  "Query bids by Account"
+#  bids: [Offer!]! @derivedFrom(field: "from")
+#
+#  "Punks offered for sale by Account"
+#  asks: [Offer!]! @derivedFrom(field: "from")
 
   "Total number of Punks owned by account"
   numberOfPunksOwned: BigInt!
@@ -193,7 +202,7 @@ type Offer @entity {
   nft: Punk
 
   "Created at. Could be ASK or BID"
-  created: Event
+  created: Event @unique
 
   "Removed at. Could be ASK or BID"
   removed: Event
@@ -229,14 +238,15 @@ type Event @entity {
   "Contract metadata"
   contract: Contract
 
-  "Punk that was assigned"
+  "Punk for the Event"
   nft: Punk
 
-  "Account that claimed Punk"
+  "Event to"
   to: Account
+  "Event from"
+  from: Account
 
   amount: BigInt
-  from: Account
   type: EventType!
   logNumber: BigInt!
 
@@ -245,6 +255,12 @@ type Event @entity {
   blockHash: Bytes!
   txHash: Bytes!
   timestamp: BigInt!
+
+  "Offer Created by this Event (if one exists/ applicable to ASK_CREATED & BID_CREATED)"
+  offerCreated: Offer @derivedFrom(field: "created")
+
+  "Offers Removed by this Event (if any/ applicable to ASK_REMOVED & BID_REMOVED)"
+  offersRemoved: [Offer!]! @derivedFrom(field: "removed")
 }
 
 
