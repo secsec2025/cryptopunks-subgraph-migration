@@ -400,3 +400,28 @@ query MyQ {
 	}
 }
 ```
+
+## Who owns the most expensive Punk (Highest Open ASK)
+```graphql
+query MyQ {
+  offers(where: {
+		open_eq: true, offerType_eq: ASK
+	}, orderBy: amount_DESC, limit: 1) {
+		amount
+		nft {
+			id
+		}
+	}
+}
+```
+
+
+## Which punk has had the most transfers?
+```graphql
+query MyQ {
+  punks(orderBy: numberOfTransfers_DESC, limit: 1) {
+		id
+		numberOfTransfers
+	}
+}
+```
