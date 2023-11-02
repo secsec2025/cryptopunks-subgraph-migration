@@ -22,7 +22,9 @@ query Last30DaysSales($timestamp_gt: String) {
 ```
 
 ### Squid Query
-Since there is no separate entity called Sales, we have to fetch `Event` entity where `Event.type = SALE`.
+Since there is no separate entity called Sales, we have to fetch `Event` entity where `Event.type = SALE`. 
+
+`$timestamp_gt = 1522136619000`
 ```graphql
 query Last30DaysSales($timestamp_gt: BigInt) {
   events(
@@ -46,5 +48,60 @@ query Last30DaysSales($timestamp_gt: BigInt) {
 ```
 
 
+## Query Punk data
+
+### Subgraph Query
+```graphql
+{
+  punks(where: { id: "1000" }) {
+    id
+    owner {
+      id
+    }
+    assignedTo {
+      id
+    }
+    wrapped
+    currentBidCreated {
+      id
+    }
+    currentAskCreated {
+      id
+    }
+    numberOfTransfers
+    numberOfSales
+    events {
+      id
+    }
+  }
+}
+```
+
+### Squid Query
+```graphql
+{
+  punks(where: { id_eq: "1000" }) {
+    id
+    owner {
+      id
+    }
+    assignedTo {
+      id
+    }
+    wrapped
+    currentBidCreated {
+      id
+    }
+    currentAskCreated {
+      id
+    }
+    numberOfTransfers
+    numberOfSales
+    events {
+      id
+    }
+  }
+}
+```
 
 
