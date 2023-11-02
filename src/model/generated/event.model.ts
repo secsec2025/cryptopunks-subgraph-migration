@@ -12,6 +12,7 @@ import {Punk} from "./punk.model"
 import {Account} from "./account.model"
 import {EventType} from "./_eventType"
 import {Offer} from "./offer.model";
+import {OneToMany as OneToMany_} from "typeorm/decorator/relations/OneToMany";
 
 @Entity_()
 export class Event {
@@ -68,8 +69,8 @@ export class Event {
     @OneToOne_(() => Offer, offer => offer.created, {nullable: true})
     offerCreated!: Offer | undefined | null;
 
-    // @OneToOne_(() => Offer, offer => offer.removed, {nullable: true})
-    // offerRemoved!: Offer | undefined | null;
+    @OneToMany_(() => Offer, e => e.removed)
+    offersRemoved!: Offer[]
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     logNumber!: bigint

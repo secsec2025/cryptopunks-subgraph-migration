@@ -23,40 +23,22 @@ export class Account {
     punksOwned!: Punk[]
 
     /**
-     * Purchases by Account
+     * Events to Account
      */
     @OneToMany_(() => Event, e => e.to)
-    bought!: Event[]
+    eventsTo!: Event[]
 
     /**
-     * Punks assigned to account (if any)
-     */
-    @OneToMany_(() => Event, e => e.to)
-    assigned!: Event[]
-
-    /**
-     * Punk transfers by Account
+     * Events from Account
      */
     @OneToMany_(() => Event, e => e.from)
-    sent!: Event[]
+    eventsFrom!: Event[]
 
     /**
-     * Punk transfers to Account
-     */
-    @OneToMany_(() => Event, e => e.to)
-    received!: Event[]
-
-    /**
-     * Query bids by Account
+     * Offers (ASK/BID) by Account
      */
     @OneToMany_(() => Offer, e => e.from)
-    bids!: Offer[]
-
-    /**
-     * Punks offered for sale by Account
-     */
-    @OneToMany_(() => Offer, e => e.from)
-    asks!: Offer[]
+    offers!: Offer[]
 
     /**
      * Total number of Punks owned by account

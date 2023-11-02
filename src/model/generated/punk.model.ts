@@ -66,6 +66,9 @@ export class Punk {
     @ManyToOne_(() => Contract, {nullable: true})
     contract!: Contract | undefined | null
 
+    @Column_({nullable: true})
+    contractId!: string | undefined | null;
+
     /**
      * Punk tokenId
      */

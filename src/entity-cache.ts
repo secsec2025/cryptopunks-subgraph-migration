@@ -208,6 +208,7 @@ export class EntityCache {
         }
 
         // punk.metadata = metadata;
+        punk.contractId = contract.id;
         punk.assignedToId = toAccount.id;
         punk.transferedToId = toAccount.id;
 
