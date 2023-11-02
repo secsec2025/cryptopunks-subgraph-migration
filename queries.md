@@ -295,3 +295,106 @@ query MyQ {
 }
 ```
 
+
+## Get Contract Details
+```graphql
+query MyQ {
+	contracts {
+		id
+		symbol
+		name
+		totalSupply
+		totalSales
+		totalAmountTraded
+		imageHash
+	}
+}
+```
+
+## Get cTokens By From ID
+```graphql
+query MyQ {
+	cTokens (where: {from: {
+		id_eq: "0x0053f28decb7184d73a0d776aff540ea09ec6a2c"
+	}}) {
+		id
+		to {
+			id
+		}
+		punkId
+		owner
+		referenceId
+	}
+}
+```
+
+## Get all Transfers of a Punk
+```graphql
+query MyQ {
+	events(where: {type_eq: TRANSFER, nft: { id_eq: "1"}}) {
+		id
+		from {
+			id
+		}
+		to {
+			id
+		}
+		nft {
+			id
+		}
+		timestamp
+		txHash
+	}
+}
+```
+
+## Get Metadata of a Punk
+```graphql
+query MyQ {
+	metaData(where: {punk: {id_eq: "12"}}) {
+		tokenId,
+		tokenURI,
+		image,
+		svg,
+		contractURI,
+		traits {
+			trait {
+				type
+				id
+			}
+		}
+	}
+}
+```
+
+## Get all punks that have more than 1 transfers
+```graphql
+query MyQ {
+	punks (where: {numberOfTransfers_gt: 1}) {
+		id
+		owner {
+			id
+		}
+		wrapped
+		numberOfSales
+		averageSalePrice
+		numberOfTransfers
+	}
+}
+```
+
+
+## Get the owner of a Proxy
+```graphql
+query MyQ {
+	userProxies(where: {id_eq: ""}) {
+		id
+		user {
+			id
+		}
+		txHash
+		blockNumber
+		blockHash
+	}
+}
+```
