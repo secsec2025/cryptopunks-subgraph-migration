@@ -98,7 +98,9 @@ export class EntityCache {
             tokenURI: TOKEN_URI.concat(punkId.toString()),
             contractURI: CONTRACT_URI,
             tokenId: punkId,
-            punkId: punkId.toString()
+            punkId: punkId.toString(),
+            image: '',
+            svg: ''
         });
 
         this.metadata.set(punkId.toString(), metadata);

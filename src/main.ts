@@ -24,6 +24,7 @@ import {
 import {handleBuy} from "./marketplaces/ERC721Sale";
 import {handleExchangeV1Buy} from "./marketplaces/RaribleExchangeV1";
 import {handleOpenSeaSale} from "./marketplaces/OpenSea";
+import {fetchPunkMetadataFromContract} from "./helpers/metadata-helper";
 
 processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     console.log(`Batch Size - ${ctx.blocks.length} blocks`);
@@ -123,4 +124,11 @@ processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
     }
 
     await entityCache.persistCacheToDatabase(false);
+
+
+    // Fetch CryptoPunk Metadata after finalizing the block processing
+    if (ctx.isHead) {
+        await fetchPunkMetadataFromContract(ctx);
+    }
+
 })
