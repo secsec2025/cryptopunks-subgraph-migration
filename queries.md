@@ -211,56 +211,58 @@ query AsksForAPunk {
 ```
 
 ### Squid Query
+The query is very identical to the above one. The only difference is we have to use aliases with where clauses to
+fetch the correct entities (Offers and Events). The response wil have no difference.
 ```graphql
 query MyQ {
-  accounts(where: { id_eq: "0xc352b534e8b987e036a93539fd6897f53488e56a" }) {
-    id
-    punksOwned {
-      id
-    }
-    bids {
-      id
-    }
-    asks {
-      id
-      created {
+    accounts(where: { id_eq: "0xc352b534e8b987e036a93539fd6897f53488e56a" }) {
         id
-        txHash
-        timestamp
-      }
+        punksOwned {
+            id
+        }
+        bids: offers(where: { offerType_eq: BID}) {
+            id
+        }
+        asks: offers(where: { offerType_eq: ASK}) {
+            id
+            created {
+                id
+                txHash
+                timestamp
+            }
+        }
+        bought: eventsTo(where: {type_eq: SALE }) {
+            id
+            timestamp
+            nft {
+                id
+            }
+        }
+        sent: eventsFrom(where: {type_eq: TRANSFER }) {
+            id
+            nft {
+                id
+            }
+            txHash
+            timestamp
+        }
+        received: eventsTo(where: {type_eq: TRANSFER }) {
+            id
+            nft {
+                id
+            }
+            txHash
+            timestamp
+        }
+        assigned: eventsTo(where: {type_eq: ASSIGN }) {
+            id
+            nft {
+                id
+            }
+            timestamp
+            txHash
+        }
     }
-    bought {
-      id
-      timestamp
-      nft {
-        id
-      }
-    }
-    sent {
-      id
-      nft {
-        id
-      }
-      txHash
-      timestamp
-    }
-    received {
-      id
-      nft {
-        id
-      }
-      txHash
-      timestamp
-    }
-    assigned {
-      id
-      nft {
-        id
-      }
-      timestamp
-      txHash
-    }
-  }
 }
 ```
 

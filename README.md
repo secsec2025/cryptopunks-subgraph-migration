@@ -11,6 +11,9 @@ This is the squid implementation of the cryptopunks subgraph. https://thegraph.c
 <li>Batch Processing is used.</li>
 <li>The <code>schema.graphql</code> file has been changed as mentioned in the below section.</li>
 <li>Punk Metadata is fetched after the squid is fully synced with the blockchain.</li>
+<li>An <code>EntityCache</code> is used to store the entities in memory to improve performance.</li>
+<li>The queries may be slightly different compared to the subgraph version due to the schema changes made. 
+But it will not affect the results.</li>
 </ul>
 
 # How to start?
