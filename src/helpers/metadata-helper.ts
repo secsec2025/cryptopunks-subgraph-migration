@@ -67,13 +67,12 @@ async function getMetaDataForAPunk(punkIndex: number, ctx: any): Promise<{ image
 
 export async function fetchPunkMetadataFromContract(ctx: DataHandlerContext<Store, {}>) {
     let metaDataList: MetaData[] = await getPunksWithoutMetadata(ctx);
-    metaDataList = metaDataList.slice(0, 9);
     console.log(`Fetching metadata for ${metaDataList.length} punks`);
 
     for (let i = 0; i < metaDataList.length; i++) {
         const m = metaDataList[i];
         const res = await getMetaDataForAPunk(parseInt(m.punkId), ctx);
-        if (!res) continue;
+        if (!res) break;
         m.image = res.image;
         m.svg = res.svg;
     }
