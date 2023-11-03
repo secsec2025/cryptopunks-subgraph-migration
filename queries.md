@@ -161,8 +161,10 @@ query AsksForAPunk {
 
 
 ## Query Owner Data
+✅ Squid data matches with subgraph.
 
 ### Subgraph Query
+The Subgraph (Playground) has a max limit of fetching max 1000 items. But squid does not, which makes it better.
 ```graphql
 {
   accounts(where: { id: "0xc352b534e8b987e036a93539fd6897f53488e56a" }) {
@@ -276,6 +278,10 @@ query MyQ {
 ## Query male Punks
 
 # Subgraph Query
+This query was found in the subgraph GitHub, but it does not work. 
+
+✅ But the Squid Query works as expected and the results are correct. 
+
 ```graphql
 {
   punks(where: { type: male }) {
@@ -305,6 +311,10 @@ query MyQ {
 
 
 ## Get Contract Details
+✅ Squid data matches with subgraph and both queries are same.
+
+There is a slight (negligible) mismatch in `totalAmountTraded` value of Wrapped Punks contract. This is due to bigint division and rounding.
+
 ```graphql
 query MyQ {
 	contracts {
