@@ -276,19 +276,18 @@ query MyQ {
 
 
 ## Query male Punks
+✅ Squid data matches with subgraph.
 
 #### Subgraph Query
-This query was found in the subgraph GitHub, but it does not work. 
-
-✅ But the Squid Query works as expected and the results are correct. 
-
 ```graphql
 {
-  punks(where: { type: male }) {
-    id
-    accessories
-    type
-  }
+    punks(where: {
+        metadata_: {
+            traits_contains: ["male"]
+        }
+    }, first: 1000, skip: 0) {
+        id
+    }
 }
 ```
 
@@ -593,6 +592,7 @@ query MyQ {
 
 ## Get Account stats for a given ID
 ✅ Squid data matches with subgraph.
+
 ### Subgraph Query
 ```graphql
 {
@@ -638,6 +638,198 @@ query MyQ {
     bought: eventsTo(where: {type_eq: SALE}) {
       id
     }
+	}
+}
+
+
+```
+
+## Which punk has been sold the most?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  punks(first: 1, 
+    orderBy: numberOfSales, 
+    orderDirection: desc) {
+    id
+    numberOfSales
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  punks(orderBy: numberOfSales_DESC, limit: 1) {
+		id
+		numberOfSales
+	}
+}
+```
+
+## Who has spent the most on punks?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  accounts(first: 1, 
+    orderBy: totalSpent, 
+    orderDirection: desc) {
+    id
+    totalSpent
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  accounts(limit: 1, 
+    orderBy: totalSpent_DESC) {
+    id
+    totalSpent
+  }
+}
+```
+
+## Who owns the most number of punks?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  accounts(first: 1, 
+    orderBy: numberOfPunksOwned, 
+    orderDirection: desc) {
+    id
+    numberOfPunksOwned
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  accounts(limit: 1, 
+    orderBy: numberOfPunksOwned_DESC) {
+    id
+    numberOfPunksOwned
+  }
+}
+```
+
+## Which male punk has been sold the most?
+To get the "female" punk, replace "male" with "female".
+
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  punks(where: {
+    metadata_: {
+      traits_contains: ["male"]
+    }
+  }, first: 1,
+  orderBy: numberOfSales,
+  orderDirection: desc) {
+    id
+    numberOfSales
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  punks(where: {
+		metadata: {
+			traits_some: {
+				trait: {
+					id_eq: "male"
+				}
+			}
+		}
+	}, orderBy: numberOfSales_DESC,
+	limit: 1) {
+    id
+		numberOfSales
+  }
+}
+```
+
+## The most expensive ask for a male punk?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  punks(where: {
+    metadata_: {
+      traits_contains: ["male"]
+    },
+    currentAsk_: {
+      open: true
+    }
+  }, orderBy: currentAsk__amount,
+    orderDirection: desc,
+  first: 5) {
+    id
+    currentAsk {
+      id
+      amount
+    }
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  punks(where: {
+		metadata: {
+			traits_some: {
+				trait: {
+					id_eq: "male"
+				}
+			}
+		},
+		currentAsk: {
+			open_eq: true
+		}
+	}, orderBy: currentAsk_amount_DESC,
+	limit: 5) {
+    id
+		currentAsk {
+			id
+			amount
+		}
+  }
+}
+```
+
+Another possible way (This can't be done in Subgraph due to its schema.graphql, `which makes the squid much more versatile.`)
+```graphql
+query MyQ {
+  offers(where: {
+		offerType_eq: ASK,
+		open_eq: true,
+		nft: {
+			metadata: {
+				traits_some: {
+					trait: {id_eq: "male"}
+				}
+			}
+		}
+	}, orderBy: amount_DESC, limit: 5) {
+		id
+		amount
+		nft {
+			id
+		}
 	}
 }
 
