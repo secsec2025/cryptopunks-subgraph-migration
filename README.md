@@ -14,6 +14,7 @@ This is the squid implementation of the cryptopunks subgraph. https://thegraph.c
 <li>An <code>EntityCache</code> is used to store the entities in memory to improve performance.</li>
 <li>The queries may be slightly different compared to the subgraph version due to the schema changes made. 
 But it will not affect the results.</li>
+<li>Please note that, transaction hashes stored in entities are in `Byte` format, not in `String`.</li>
 </ul>
 
 # How to start?
@@ -42,6 +43,8 @@ sqd serve
 
 <ul>
 <li>Time to fully sync (without metadata) - Less than 2 hours (1 hour and 50 min approximately)</li>
+<li>You can download the fully synced Postgres database (up to 18489539th block/ without metadata)
+<a href="https://drive.google.com/file/d/1FTYlz9PTzPS-bZJzodihI2CjAByREmtZ/view?usp=sharing">here</a>.</li>
 <li>Multicall Endpoint gives some errors. So I was unable to use it.</li>
 </ul>
 
