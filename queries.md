@@ -277,7 +277,7 @@ query MyQ {
 
 ## Query male Punks
 
-# Subgraph Query
+#### Subgraph Query
 This query was found in the subgraph GitHub, but it does not work. 
 
 ✅ But the Squid Query works as expected and the results are correct. 
@@ -292,7 +292,7 @@ This query was found in the subgraph GitHub, but it does not work.
 }
 ```
 
-# Squid Query
+#### Squid Query
 ```graphql
 query MyQ {
   punks(where: {
@@ -330,6 +330,27 @@ query MyQ {
 ```
 
 ## Get cTokens By From ID
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+query MyQ {
+  ctokens(where: 
+    {from_: 
+      {id: "0x0053f28decb7184d73a0d776aff540ea09ec6a2c"}
+    }) {
+    id
+    to {
+      id
+    }
+    punkId
+    owner
+    referenceId
+  }
+}
+```
+
+### Squid Query
 ```graphql
 query MyQ {
 	cTokens (where: {from: {
@@ -347,26 +368,74 @@ query MyQ {
 ```
 
 ## Get all Transfers of a Punk
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
 ```graphql
 query MyQ {
-	events(where: {type_eq: TRANSFER, nft: { id_eq: "1"}}) {
-		id
-		from {
-			id
-		}
-		to {
-			id
-		}
-		nft {
-			id
-		}
-		timestamp
-		txHash
-	}
+  transfers(where: 
+    {nft_: {id: "1"}},
+    orderBy: timestamp,
+    orderDirection: asc) {
+    id
+    from {
+      id
+    }
+    to {
+      id
+    }
+    nft {
+      id
+    }
+    timestamp
+    txHash
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+    events(where: {type_eq: TRANSFER, nft: { id_eq: "1"}},
+        orderBy: timestamp_ASC) {
+        id
+        from {
+            id
+        }
+        to {
+            id
+        }
+        nft {
+            id
+        }
+        timestamp
+        txHash
+    }
 }
 ```
 
 ## Get Metadata of a Punk
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+query MyQ {
+	metaDatas(where: {punk_: {id: "12"}}) {
+		tokenId,
+		tokenURI,
+		image,
+		svg,
+		contractURI,
+		traits {
+      id
+      type
+		}
+	}
+}
+```
+
+### Squid Query
+The only slight difference is that there is an intermediate entity that maps MetaData and Trait (Many-to-Many Relationship)
 ```graphql
 query MyQ {
 	metaData(where: {punk: {id_eq: "12"}}) {
@@ -385,10 +454,30 @@ query MyQ {
 }
 ```
 
-## Get all punks that have more than 1 transfers
+## Get all punks that have more than 10 transfers
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
 ```graphql
 query MyQ {
-	punks (where: {numberOfTransfers_gt: 1}) {
+	punks (where: {numberOfTransfers_gt: 10},
+  first: 1000) {
+		id
+		owner {
+			id
+		}
+		wrapped
+		numberOfSales
+		averageSalePrice
+		numberOfTransfers
+	}
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+	punks (where: {numberOfTransfers_gt: 10}) {
 		id
 		owner {
 			id
@@ -403,9 +492,12 @@ query MyQ {
 
 
 ## Get the owner of a Proxy
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
 ```graphql
 query MyQ {
-	userProxies(where: {id_eq: ""}) {
+	userProxies(where: {id: "0x43393caafba3d76db71b2cdb073b0174a8c0af84"}) {
 		id
 		user {
 			id
@@ -417,22 +509,78 @@ query MyQ {
 }
 ```
 
-## Who owns the most expensive Punk (Highest Open ASK)
+### Squid Query
 ```graphql
 query MyQ {
-  offers(where: {
-		open_eq: true, offerType_eq: ASK
-	}, orderBy: amount_DESC, limit: 1) {
-		amount
-		nft {
+	userProxies(where: {id_eq: "0x43393caafba3d76db71b2cdb073b0174a8c0af84"}) {
+		id
+		user {
 			id
 		}
+		txHash
+		blockNumber
+		blockHash
 	}
+}
+```
+
+## Who owns the 10 most expensive Punks (Highest Open ASK)
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+query MyQ {
+    offers(where: {
+        open: true, offerType: ASK
+    },
+        orderBy: amount,
+        orderDirection: desc,
+        first: 10) {
+        amount
+        nft {
+            id
+            owner {
+                id
+            }
+        }
+    }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+    offers(where: {
+        open_eq: true, offerType_eq: ASK
+    }, orderBy: amount_DESC, limit: 10) {
+        amount
+        nft {
+            id
+            owner {
+                id
+            }
+        }
+    }
 }
 ```
 
 
 ## Which punk has had the most transfers?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+query MyQ {
+  punks(orderBy: numberOfTransfers,
+    orderDirection: desc,
+    first: 1) {
+		id
+		numberOfTransfers
+	}
+}
+```
+
+### Squid Query
 ```graphql
 query MyQ {
   punks(orderBy: numberOfTransfers_DESC, limit: 1) {
