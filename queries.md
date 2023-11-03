@@ -835,3 +835,65 @@ query MyQ {
 
 
 ```
+
+## Which punks hasn’t been moved since assign event?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+  punks(where: {
+    numberOfTransfers: 0
+  }, first: 1000, skip: 0) {
+    id
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+  punks(where: {numberOfTransfers_eq: 0}) {
+		id
+	}
+}
+```
+
+## Which addresses own at least one punk that hasn’t been moved?
+✅ Squid data matches with subgraph.
+
+### Subgraph Query
+```graphql
+{
+    accounts(where: {
+        punksOwned_: {
+            numberOfTransfers: 0
+        }
+    }, first: 1000) {
+        id,
+        punksOwned(where: {numberOfTransfers: 0}) {
+            id
+            numberOfTransfers
+        }
+    }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+    accounts(where: {
+        punksOwned_some: {
+            numberOfTransfers_eq: 0
+        }
+    }) {
+        id,
+        punksOwned(where: {numberOfTransfers_eq: 0}) {
+            id
+            numberOfTransfers
+        }
+    }
+}
+```
+
+
