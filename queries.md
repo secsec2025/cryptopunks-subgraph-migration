@@ -1,54 +1,59 @@
 # Sample Queries
 
 ## Sales for the last 30 days
+✅ Squid data matches with subgraph.
 
 ### Subgraph Query
 ```graphql
-query Last30DaysSales($timestamp_gt: String) {
-  sales(
-    orderBy: timestamp
-    orderDirection: desc
-    where: { timestamp_gt: $timestamp_gt }
-  ) {
-    id
-    to {
-      id
+query Last30DaysSales {
+    sales(
+        orderBy: timestamp
+        orderDirection: desc
+        first: 200
+        where: { timestamp_gt: 1696302647 }
+    ) {
+        id
+        type
+        to {
+            id
+        }
+        amount
+        txHash
+        timestamp
+        nft {
+            tokenId
+        }
     }
-    amount
-    txHash
-    timestamp
-  }
 }
 ```
 
 ### Squid Query
 Since there is no separate entity called Sales, we have to fetch `Event` entity where `Event.type = SALE`. 
 
-`$timestamp_gt = 1522136619000`
 ```graphql
-query Last30DaysSales($timestamp_gt: BigInt) {
-  events(
-    orderBy: timestamp_DESC
-    where: { timestamp_gt: $timestamp_gt, type_eq: SALE }
-		limit: 30
-  ) {
-    id
-		type
-    to {
-      id
+query Last30DaysSales {
+    events(
+        orderBy: timestamp_DESC
+        where: { timestamp_gt: 1696302647000, type_eq: SALE }
+    ) {
+        id
+        type
+        to {
+            id
+        }
+        amount
+        txHash
+        timestamp
+        nft {
+            tokenId
+        }
     }
-    amount
-    txHash
-    timestamp
-    nft {
-        tokenId
-    }
-  }
 }
 ```
 
 
 ## Query Punk data
+✅ Squid data matches with subgraph.
 
 ### Subgraph Query
 ```graphql
@@ -105,27 +110,28 @@ query Last30DaysSales($timestamp_gt: BigInt) {
 ```
 
 ## Query the Asks for a Punk
+✅ Squid data matches with subgraph.
 
 ### Subgraph Query
 ```graphql
 {
-  asks(orderDirection: desc, where: { nft: "1000" }) {
-    id
-    open
-    amount
-    created {
-      blockNumber
-      timestamp
+    asks(orderDirection: asc, orderBy: id, where: { nft: "1000" }) {
+        id
+        open
+        amount
+        created {
+            blockNumber
+            timestamp
+        }
+        removed {
+            id
+            blockNumber
+            timestamp
+        }
+        from {
+            id
+        }
     }
-    removed {
-      id
-      blockNumber
-      timestamp
-    }
-    from {
-      id
-    }
-  }
 }
 ```
 
@@ -133,23 +139,23 @@ query Last30DaysSales($timestamp_gt: BigInt) {
 The query is almost same. Only difference is we have to fetch `Offer` entity with `Offer.offerType = ASK`. 
 ```graphql
 query AsksForAPunk {
-  offers(where: {nft: {id_eq: "1000"}, offerType_eq: ASK}, orderBy: id_DESC) {
-    id
-    open
-    amount
-    created {
-      blockNumber
-      timestamp
+    asks: offers(where: {nft: {id_eq: "1000"}, offerType_eq: ASK}, orderBy: id_DESC) {
+        id
+        open
+        amount
+        created {
+            blockNumber
+            timestamp
+        }
+        removed {
+            id
+            timestamp
+            blockNumber
+        }
+        from {
+            id
+        }
     }
-    removed {
-      id
-      timestamp
-      blockNumber
-    }
-    from {
-      id
-    }
-  }
 }
 ```
 
@@ -424,4 +430,58 @@ query MyQ {
 		numberOfTransfers
 	}
 }
+```
+
+
+## Get Account stats for a given ID
+✅ Squid data matches with subgraph.
+### Subgraph Query
+```graphql
+{
+  accounts(where: { id: "0x577ebc5de943e35cdf9ecb5bbe1f7d7cb6c7c647"}) {
+    id
+		numberOfPunksOwned
+		numberOfPunksAssigned
+		numberOfTransfers
+		numberOfSales
+		numberOfPurchases
+		totalSpent
+		totalEarned
+		averageAmountSpent
+    punksOwned {
+      id
+    }
+    bought {
+      id
+    }
+    nftsOwned {
+      id
+    }
+  }
+}
+```
+
+### Squid Query
+```graphql
+query MyQ {
+	accounts(limit: 5, orderBy: id_ASC, where: {id_eq: "0x577ebc5de943e35cdf9ecb5bbe1f7d7cb6c7c647"}) {
+		id
+		numberOfPunksOwned
+		numberOfPunksAssigned
+		numberOfTransfers
+		numberOfSales
+		numberOfPurchases
+		totalSpent
+		totalEarned
+		averageAmountSpent
+    punksOwned {
+      id
+    }
+    bought: eventsTo(where: {type_eq: SALE}) {
+      id
+    }
+	}
+}
+
+
 ```

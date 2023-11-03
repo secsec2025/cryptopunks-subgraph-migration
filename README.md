@@ -38,11 +38,18 @@ sqd serve
 </ul>
 
 
+# Squid Stats
+
+<ul>
+<li>Time to fully sync (without metadata) - Less than 2 hours (1 hour and 50 min approximately)</li>
+<li>Multicall Endpoint gives some errors. So I was unable to use it.</li>
+</ul>
+
 
 # What's Next to Do?
 
 <ul>
-<li>Add sample queries. <code>queries.md</code></li>
+<li>Add more sample queries. <code>queries.md</code></li>
 <li>Add custom resolvers to make the querying more similar to the subgraph.</li>
 </ul>
 
